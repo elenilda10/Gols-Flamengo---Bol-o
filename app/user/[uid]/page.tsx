@@ -7,12 +7,12 @@ type UserData = {
 };
 
 async function getUser(uid: string): Promise<UserData> {
-  const res = await fetch(
-    `https://prod-api.telebothost.com/ownlang/webhook/22351677?command=ranking_user_api&uid=${uid}`,
-    {
-      cache: "no-store",
-    }
-  );
+  const baseUrl =
+    "https://prod-api.telebothost.com/ownlang/webhook/22351677?command=ranking_user_public_api&sig=b42cab08060328035d018289c211176605a8243cabc2eda2293c2b0745955b7d";
+
+  const res = await fetch(`${baseUrl}&uid=${encodeURIComponent(uid)}`, {
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     throw new Error("Erro ao carregar usuário");
