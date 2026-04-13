@@ -1,24 +1,30 @@
-type UserData = {
-  ok: boolean;
-  uid: string;
+type RankingItem = {
+  id: string;
   nome: string;
+  pontos: number;
   total: number;
   acertos: string[];
 };
 
-async function getUser(uid: string): Promise<UserData> {
-  const baseUrl =
-    "https://prod-api.telebothost.com/ownlang/webhook/22351677?command=ranking_user_public_api&sig=b42cab08060328035d018289c211176605a8243cabc2eda2293c2b0745955b7d";
+type RankingResponse = {
+  ok: boolean;
+  ranking: RankingItem[];
+};
 
-  const res = await fetch(`${baseUrl}&uid=${encodeURIComponent(uid)}`, {
-    cache: "no-store",
-  });
+async function getRanking(): Promise<RankingItem[]> {
+  const res = await fetch(
+    "https://prod-api.telebothost.com/ownlang/webhook/22351677?command=ranking_api&sig=623c115af27121ecc3f10058d0e06d6122e703c692f002fc24795db6af325a9b",
+    {
+      cache: "no-store",
+    }
+  );
 
   if (!res.ok) {
-    throw new Error("Erro ao carregar usuário");
+    throw new Error("Falha ao carregar ranking");
   }
 
-  return res.json();
+  const data: RankingResponse = await res.json();
+  return data.ranking || [];
 }
 
 export default async function Page({
@@ -27,20 +33,35 @@ export default async function Page({
   params: Promise<{ uid: string }>;
 }) {
   const { uid } = await params;
-  const data = await getUser(uid);
+  const ranking = await getRanking();
+
+  const userData = ranking.find((item) => item.id === uid);
+
+  if (!userData) {
+    return (
+      <main style={styles.page}>
+        <div style={styles.container}>
+          <h1 style={styles.title}>Usuário não encontrado</h1>
+          <a href="/" style={styles.btn}>⬅ Voltar ao ranking</a>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main style={styles.page}>
       <div style={styles.container}>
-        <h1 style={styles.title}>🏆 {data.nome}</h1>
+        <h1 style={styles.title}>🏆 {userData.nome}</h1>
 
-        <p style={styles.subtitle}>{data.total} acerto(s)</p>
+        <p style={styles.subtitle}>
+          {userData.total} acerto(s)
+        </p>
 
         <div style={styles.card}>
-          {data.acertos.length === 0 ? (
+          {userData.acertos.length === 0 ? (
             <div style={styles.empty}>😕 Nenhum acerto ainda</div>
           ) : (
-            data.acertos.map((item, index) => (
+            userData.acertos.map((item, index) => (
               <div key={index} style={styles.item}>
                 ⚽ {item}
               </div>
