@@ -5,119 +5,65 @@ type RankingUser = {
   name?: string;
   pontos?: number;
   total?: number;
-  posicao?: number;
-  position?: number;
   acertos?: string[];
 };
 
-type UserApiResponse = {
+type RankingResponse = {
   ok?: boolean;
-  id?: string;
-  uid?: string;
-  nome?: string;
-  name?: string;
-  pontos?: number;
-  total?: number;
-  posicao?: number;
-  position?: number;
-  acertos?: string[];
-  user?: RankingUser;
-  jogador?: RankingUser;
-  data?: RankingUser;
   ranking?: RankingUser[];
+  data?:
+    | RankingUser[]
+    | {
+        ranking?: RankingUser[];
+      };
 };
 
-function buildUserApiUrl(baseUrl: string, uid: string) {
-  const options = encodeURIComponent(
-    JSON.stringify({
-      uid: uid,
-    })
-  );
+async function getRanking(): Promise<RankingUser[]> {
+  const apiUrl = process.env.RANKING_API_URL;
 
-  if (baseUrl.includes("&sig=")) {
-    return baseUrl.replace("&sig=", `&options=${options}&sig=`);
-  }
-
-  if (baseUrl.includes("?sig=")) {
-    return baseUrl.replace("?sig=", `?options=${options}&sig=`);
-  }
-
-  const separator = baseUrl.includes("?") ? "&" : "?";
-  return `${baseUrl}${separator}options=${options}`;
-}
-
-function isRankingUser(value: unknown): value is RankingUser {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const obj = value as RankingUser;
-
-  return (
-    "uid" in obj ||
-    "id" in obj ||
-    "nome" in obj ||
-    "name" in obj ||
-    "pontos" in obj ||
-    "total" in obj ||
-    "acertos" in obj
-  );
-}
-
-async function getUser(uid: string): Promise<RankingUser | null> {
-  const baseUrl = process.env.RANKING_USER_API_BASE;
-
-  if (!baseUrl) {
-    return null;
+  if (!apiUrl) {
+    return [];
   }
 
   try {
-    const url = buildUserApiUrl(baseUrl, uid);
-
-    const res = await fetch(url, {
+    const res = await fetch(apiUrl, {
       cache: "no-store",
     });
 
     if (!res.ok) {
-      return null;
+      return [];
     }
 
-    const json: unknown = await res.json();
+    const data: RankingResponse | RankingUser[] = await res.json();
 
-    if (isRankingUser(json)) {
-      return json;
-    }
-
-    const data = json as UserApiResponse;
-
-    if (data.user) {
-      return data.user;
-    }
-
-    if (data.jogador) {
-      return data.jogador;
-    }
-
-    if (data.data) {
-      return data.data;
+    if (Array.isArray(data)) {
+      return data;
     }
 
     if (Array.isArray(data.ranking)) {
-      const found = data.ranking.find((item) => {
-        return String(item.id || item.uid) === String(uid);
-      });
-
-      return found || null;
+      return data.ranking;
     }
 
-    return null;
+    if (Array.isArray(data.data)) {
+      return data.data;
+    }
+
+    if (data.data && Array.isArray(data.data.ranking)) {
+      return data.data.ranking;
+    }
+
+    return [];
   } catch {
-    return null;
+    return [];
   }
 }
 
-function getName(userData: RankingUser) {
-  return userData.nome || userData.name || "Jogador";
+function getUserId(user: RankingUser) {
+  return String(user.id || user.uid || "");
+}
+
+function getName(user: RankingUser) {
+  return user.nome || user.name || "Jogador";
 }
 
 export default async function UserPage({
@@ -127,7 +73,13 @@ export default async function UserPage({
 }) {
   const { uid } = await params;
 
-  const userData = await getUser(uid);
+  const ranking = await getRanking();
+
+  const userIndex = ranking.findIndex((item) => {
+    return getUserId(item) === String(uid);
+  });
+
+  const userData = userIndex >= 0 ? ranking[userIndex] : null;
 
   if (!userData) {
     return (
@@ -140,8 +92,7 @@ export default async function UserPage({
           <div>
             <h1>❌ Usuário não encontrado</h1>
             <p>
-              Não foi possível carregar este jogador. Verifique se
-              RANKING_USER_API_BASE está salva na Vercel e faça redeploy.
+              Este jogador ainda não aparece no ranking atual do bolão.
             </p>
           </div>
         </section>
@@ -152,9 +103,9 @@ export default async function UserPage({
   const nome = getName(userData);
   const inicial = nome.charAt(0).toUpperCase();
 
-  const total = Number(userData.total || userData.pontos || 0);
   const pontos = Number(userData.pontos || userData.total || 0);
-  const posicao = Number(userData.posicao || userData.position || 0);
+  const total = Number(userData.total || userData.pontos || 0);
+  const posicao = userIndex + 1;
   const acertos = Array.isArray(userData.acertos) ? userData.acertos : [];
 
   return (
@@ -166,9 +117,7 @@ export default async function UserPage({
       <section className="profile-card">
         <div className="profile-avatar">{inicial}</div>
 
-        <span className="profile-tag">
-          {posicao > 0 ? `#${posicao} no ranking` : "Participante"}
-        </span>
+        <span className="profile-tag">#{posicao} no ranking</span>
 
         <h1>{nome}</h1>
 
@@ -188,7 +137,7 @@ export default async function UserPage({
           </div>
 
           <div className="profile-stat">
-            <strong>{posicao > 0 ? posicao : "-"}</strong>
+            <strong>{posicao}</strong>
             <span>Posição</span>
           </div>
         </div>
