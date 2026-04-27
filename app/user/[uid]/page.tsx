@@ -14,10 +14,12 @@ type UserApiResponse = {
   ok?: boolean;
   user?: RankingUser;
   jogador?: RankingUser;
-  data?: RankingUser | {
-    user?: RankingUser;
-    jogador?: RankingUser;
-  };
+  data?:
+    | RankingUser
+    | {
+        user?: RankingUser;
+        jogador?: RankingUser;
+      };
   ranking?: RankingUser[];
 };
 
@@ -41,6 +43,22 @@ function buildUserApiUrl(baseUrl: string, uid: string) {
   return `${baseUrl}${separator}options=${options}`;
 }
 
+function isRankingUser(value: unknown): value is RankingUser {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const obj = value as RankingUser;
+
+  return (
+    "nome" in obj ||
+    "name" in obj ||
+    "pontos" in obj ||
+    "total" in obj ||
+    "acertos" in obj
+  );
+}
+
 async function getUser(uid: string): Promise<RankingUser | null> {
   const baseUrl = process.env.RANKING_USER_API_BASE;
 
@@ -59,11 +77,13 @@ async function getUser(uid: string): Promise<RankingUser | null> {
       return null;
     }
 
-    const data: UserApiResponse | RankingUser = await res.json();
+    const json: unknown = await res.json();
 
-    if ("nome" in data || "name" in data || "pontos" in data) {
-      return data as RankingUser;
+    if (isRankingUser(json)) {
+      return json;
     }
+
+    const data = json as UserApiResponse;
 
     if (data.user) {
       return data.user;
@@ -73,15 +93,25 @@ async function getUser(uid: string): Promise<RankingUser | null> {
       return data.jogador;
     }
 
-    if (data.data && "nome" in data.data) {
-      return data.data as RankingUser;
+    if (data.data && isRankingUser(data.data)) {
+      return data.data;
     }
 
-    if (data.data && "user" in data.data && data.data.user) {
+    if (
+      data.data &&
+      typeof data.data === "object" &&
+      "user" in data.data &&
+      data.data.user
+    ) {
       return data.data.user;
     }
 
-    if (data.data && "jogador" in data.data && data.data.jogador) {
+    if (
+      data.data &&
+      typeof data.data === "object" &&
+      "jogador" in data.data &&
+      data.data.jogador
+    ) {
       return data.data.jogador;
     }
 
