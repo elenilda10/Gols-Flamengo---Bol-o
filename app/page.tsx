@@ -23,10 +23,11 @@ async function getRanking(): Promise<RankingItem[]> {
   });
 
   if (!res.ok) {
-    throw new Error("Falha ao carregar ranking");
+    throw new Error("Falha ao carregar ranking.");
   }
 
   const data: RankingResponse = await res.json();
+
   return data.ranking || [];
 }
 
@@ -34,7 +35,7 @@ function getMedal(index: number) {
   if (index === 0) return "🥇";
   if (index === 1) return "🥈";
   if (index === 2) return "🥉";
-  return "🔥";
+  return "👤";
 }
 
 function getPositionClass(index: number) {
@@ -45,36 +46,60 @@ function getPositionClass(index: number) {
 }
 
 export default async function Home() {
-  const ranking = await getRanking();
+  let ranking: RankingItem[] = [];
+
+  try {
+    ranking = await getRanking();
+  } catch (error) {
+    return (
+      <main className="page">
+        <section className="error-card">
+          <div>
+            <h1>⚠️ Erro ao carregar ranking</h1>
+            <p>
+              Verifique se a variável RANKING_API_URL está configurada na Vercel.
+            </p>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   const totalJogadores = ranking.length;
-  const totalPontos = ranking.reduce((sum, item) => sum + Number(item.pontos || 0), 0);
+
+  const totalPontos = ranking.reduce((sum, item) => {
+    return sum + Number(item.pontos || 0);
+  }, 0);
+
+  const totalAcertos = ranking.reduce((sum, item) => {
+    return sum + Number(item.total || item.pontos || 0);
+  }, 0);
+
   const lider = ranking[0];
 
   return (
     <main className="page">
       <section className="hero">
-        <div className="hero-badge">🔴⚫ FlamengoGolsBot</div>
+        <div className="hero-badge">⚫ FlamengoGolsBot</div>
 
         <h1>Ranking do Bolão</h1>
 
         <p>
-          Confira a classificação atualizada dos participantes do bolão.
+          Acompanhe em tempo real a classificação dos participantes do bolão.
+          Pontuação atualizada pelo bot oficial.
         </p>
 
         <div className="hero-actions">
           <a
+            className="primary-btn"
             href="https://t.me/FlamengoGolsBot"
             target="_blank"
-            className="primary-btn"
+            rel="noreferrer"
           >
             Abrir Bot
           </a>
 
-          <a
-            href="#ranking"
-            className="secondary-btn"
-          >
+          <a className="secondary-btn" href="#ranking">
             Ver Ranking
           </a>
         </div>
@@ -94,17 +119,19 @@ export default async function Home() {
         </div>
 
         <div className="stat-card">
-          <span>👑</span>
-          <strong>{lider ? lider.nome : "—"}</strong>
-          <p>Líder atual</p>
+          <span>🎯</span>
+          <strong>{totalAcertos}</strong>
+          <p>Acertos registrados</p>
         </div>
       </section>
 
-      <section id="ranking" className="ranking-section">
+      <section className="ranking-section" id="ranking">
         <div className="section-header">
           <div>
             <h2>Classificação</h2>
-            <p>Atualização em tempo real pelo bot</p>
+            <p>
+              Líder atual: <strong>{lider ? lider.nome : "—"}</strong>
+            </p>
           </div>
 
           <span className="live-pill">● Ao vivo</span>
@@ -113,42 +140,45 @@ export default async function Home() {
         {ranking.length === 0 ? (
           <div className="empty-card">
             <h3>Nenhum ranking disponível</h3>
-            <p>Assim que o bot registrar os pontos, eles aparecerão aqui.</p>
+            <p>Assim que o bot registrar pontos, eles aparecerão aqui.</p>
           </div>
         ) : (
           <div className="ranking-list">
-            {ranking.map((item, index) => (
-              <a
-                key={item.id}
-                href={`/user/${item.id}`}
-                className={getPositionClass(index)}
-              >
-                <div className="rank-left">
-                  <div className="rank-position">
-                    <span>{getMedal(index)}</span>
-                    <strong>{index + 1}</strong>
+            {ranking.map((item, index) => {
+              const pontos = Number(item.pontos || 0);
+              const total = Number(item.total || item.pontos || 0);
+
+              return (
+                <a
+                  key={String(item.id)}
+                  className={getPositionClass(index)}
+                  href={`/user/${encodeURIComponent(String(item.id))}`}
+                >
+                  <div className="rank-left">
+                    <div className="rank-position">
+                      <span>{getMedal(index)}</span>
+                      <strong>#{index + 1}</strong>
+                    </div>
+
+                    <div>
+                      <h3>{item.nome || "Jogador"}</h3>
+                      <p>{total} acerto(s)</p>
+                    </div>
                   </div>
 
-                  <div>
-                    <h3>{item.nome}</h3>
-                    <p>
-                      {Number(item.total || item.pontos || 0)} acerto(s)
-                    </p>
+                  <div className="rank-points">
+                    <strong>{pontos}</strong>
+                    <span>{pontos === 1 ? "ponto" : "pontos"}</span>
                   </div>
-                </div>
-
-                <div className="rank-points">
-                  <strong>{item.pontos}</strong>
-                  <span>pts</span>
-                </div>
-              </a>
-            ))}
+                </a>
+              );
+            })}
           </div>
         )}
       </section>
 
       <footer className="footer">
-        <p>Feito para a Nação Rubro-Negra 🔴⚫</p>
+        Feito para a Nação Rubro-Negra ⚫🔴
       </footer>
     </main>
   );
