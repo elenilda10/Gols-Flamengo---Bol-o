@@ -12,14 +12,18 @@ type RankingUser = {
 
 type UserApiResponse = {
   ok?: boolean;
+  id?: string;
+  uid?: string;
+  nome?: string;
+  name?: string;
+  pontos?: number;
+  total?: number;
+  posicao?: number;
+  position?: number;
+  acertos?: string[];
   user?: RankingUser;
   jogador?: RankingUser;
-  data?:
-    | RankingUser
-    | {
-        user?: RankingUser;
-        jogador?: RankingUser;
-      };
+  data?: RankingUser;
   ranking?: RankingUser[];
 };
 
@@ -39,7 +43,6 @@ function buildUserApiUrl(baseUrl: string, uid: string) {
   }
 
   const separator = baseUrl.includes("?") ? "&" : "?";
-
   return `${baseUrl}${separator}options=${options}`;
 }
 
@@ -51,6 +54,8 @@ function isRankingUser(value: unknown): value is RankingUser {
   const obj = value as RankingUser;
 
   return (
+    "uid" in obj ||
+    "id" in obj ||
     "nome" in obj ||
     "name" in obj ||
     "pontos" in obj ||
@@ -93,26 +98,8 @@ async function getUser(uid: string): Promise<RankingUser | null> {
       return data.jogador;
     }
 
-    if (data.data && isRankingUser(data.data)) {
+    if (data.data) {
       return data.data;
-    }
-
-    if (
-      data.data &&
-      typeof data.data === "object" &&
-      "user" in data.data &&
-      data.data.user
-    ) {
-      return data.data.user;
-    }
-
-    if (
-      data.data &&
-      typeof data.data === "object" &&
-      "jogador" in data.data &&
-      data.data.jogador
-    ) {
-      return data.data.jogador;
     }
 
     if (Array.isArray(data.ranking)) {
@@ -164,8 +151,9 @@ export default async function UserPage({
 
   const nome = getName(userData);
   const inicial = nome.charAt(0).toUpperCase();
-  const pontos = Number(userData.pontos || 0);
+
   const total = Number(userData.total || userData.pontos || 0);
+  const pontos = Number(userData.pontos || userData.total || 0);
   const posicao = Number(userData.posicao || userData.position || 0);
   const acertos = Array.isArray(userData.acertos) ? userData.acertos : [];
 
