@@ -15,20 +15,24 @@ async function getRanking(): Promise<RankingItem[]> {
   const apiUrl = process.env.RANKING_API_URL;
 
   if (!apiUrl) {
-    throw new Error("RANKING_API_URL não configurada no Vercel.");
+    return [];
   }
 
-  const res = await fetch(apiUrl, {
-    cache: "no-store",
-  });
+  try {
+    const res = await fetch(apiUrl, {
+      cache: "no-store",
+    });
 
-  if (!res.ok) {
-    throw new Error("Falha ao carregar ranking.");
+    if (!res.ok) {
+      return [];
+    }
+
+    const data: RankingResponse = await res.json();
+
+    return Array.isArray(data.ranking) ? data.ranking : [];
+  } catch {
+    return [];
   }
-
-  const data: RankingResponse = await res.json();
-
-  return data.ranking || [];
 }
 
 function getMedal(index: number) {
@@ -46,24 +50,7 @@ function getPositionClass(index: number) {
 }
 
 export default async function Home() {
-  let ranking: RankingItem[] = [];
-
-  try {
-    ranking = await getRanking();
-  } catch (error) {
-    return (
-      <main className="page">
-        <section className="error-card">
-          <div>
-            <h1>⚠️ Erro ao carregar ranking</h1>
-            <p>
-              Verifique se a variável RANKING_API_URL está configurada na Vercel.
-            </p>
-          </div>
-        </section>
-      </main>
-    );
-  }
+  const ranking = await getRanking();
 
   const totalJogadores = ranking.length;
 
@@ -140,7 +127,9 @@ export default async function Home() {
         {ranking.length === 0 ? (
           <div className="empty-card">
             <h3>Nenhum ranking disponível</h3>
-            <p>Assim que o bot registrar pontos, eles aparecerão aqui.</p>
+            <p>
+              Assim que o bot registrar pontos, eles aparecerão aqui.
+            </p>
           </div>
         ) : (
           <div className="ranking-list">
