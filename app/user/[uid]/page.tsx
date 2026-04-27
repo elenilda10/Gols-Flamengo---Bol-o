@@ -12,12 +12,15 @@ type RankingResponse = {
 };
 
 async function getRanking(): Promise<RankingItem[]> {
-  const res = await fetch(
-    "https://prod-api.telebothost.com/ownlang/webhook/22351677?command=ranking_api&sig=623c115af27121ecc3f10058d0e06d6122e703c692f002fc24795db6af325a9b",
-    {
-      cache: "no-store",
-    }
-  );
+  const apiUrl = process.env.RANKING_API_URL;
+
+  if (!apiUrl) {
+    throw new Error("RANKING_API_URL não configurada no Vercel.");
+  }
+
+  const res = await fetch(apiUrl, {
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     throw new Error("Falha ao carregar ranking");
@@ -35,6 +38,89 @@ export default async function Page({
   const { uid } = await params;
   const ranking = await getRanking();
 
+  const userData = ranking.find((item) => String(item.id) === String(uid));
+  const posicao = ranking.findIndex((item) => String(item.id) === String(uid)) + 1;
+
+  if (!userData) {
+    return (
+      <main className="page">
+        <section className="profile-card">
+          <div className="profile-avatar">❌</div>
+          <h1>Usuário não encontrado</h1>
+          <p>Esse jogador ainda não aparece no ranking do bolão.</p>
+
+          <a href="/" className="primary-btn">
+            ⬅ Voltar ao ranking
+          </a>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="page">
+      <section className="profile-card">
+        <div className="profile-avatar">
+          {userData.nome.charAt(0).toUpperCase()}
+        </div>
+
+        <span className="profile-tag">#{posicao} no ranking</span>
+
+        <h1>{userData.nome}</h1>
+
+        <p className="profile-subtitle">
+          Participante do bolão FlamengoGolsBot
+        </p>
+
+        <div className="profile-stats">
+          <div>
+            <strong>{userData.pontos}</strong>
+            <span>Pontos</span>
+          </div>
+
+          <div>
+            <strong>{userData.total}</strong>
+            <span>Acertos</span>
+          </div>
+
+          <div>
+            <strong>{posicao}</strong>
+            <span>Posição</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="history-section">
+        <div className="section-header">
+          <div>
+            <h2>Histórico de acertos</h2>
+            <p>Resultados acertados pelo participante</p>
+          </div>
+        </div>
+
+        {userData.acertos.length === 0 ? (
+          <div className="empty-card">
+            <h3>Nenhum acerto ainda</h3>
+            <p>Quando o jogador acertar um placar, aparecerá aqui.</p>
+          </div>
+        ) : (
+          <div className="history-list">
+            {userData.acertos.map((item, index) => (
+              <div key={index} className="history-card">
+                <span>⚽</span>
+                <strong>{item}</strong>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <a href="/" className="secondary-btn back-btn">
+          ⬅ Voltar ao ranking
+        </a>
+      </section>
+    </main>
+  );
+}
   const userData = ranking.find((item) => item.id === uid);
 
   if (!userData) {
