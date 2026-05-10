@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 type RankingItem = {
   id: string
@@ -20,10 +20,32 @@ type RankingApiResponse = {
 const RANKING_API_URL =
   "https://prod-api.telebothost.com/ownlang/webhook/22351677?command=ranking_api&sig=623c115af27121ecc3f10058d0e06d6122e703c692f002fc24795db6af325a9b"
 
+function getName(player: RankingItem) {
+  return player.nome || player.name || "Torcedor"
+}
+
+function getInitials(name: string) {
+  return name
+    .trim()
+    .split(" ")
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase()
+}
+
+function getMedal(index: number) {
+  if (index === 0) return "🥇"
+  if (index === 1) return "🥈"
+  if (index === 2) return "🥉"
+  return `#${index + 1}`
+}
+
 export default function RankingClient() {
   const [ranking, setRanking] = useState<RankingItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [search, setSearch] = useState("")
 
   useEffect(() => {
     async function loadRanking() {
@@ -41,7 +63,7 @@ export default function RankingClient() {
         }
 
         setRanking(data.ranking)
-      } catch (err) {
+      } catch {
         setError("Não foi possível carregar o ranking.")
         setRanking([])
       } finally {
@@ -52,6 +74,18 @@ export default function RankingClient() {
     loadRanking()
   }, [])
 
+  const filteredRanking = useMemo(() => {
+    const term = search.trim().toLowerCase()
+
+    if (!term) return ranking
+
+    return ranking.filter((player) => {
+      return getName(player).toLowerCase().includes(term)
+    })
+  }, [ranking, search])
+
+  const topThree = ranking.slice(0, 3)
+
   const totalJogadores = ranking.length
   const pontosSomados = ranking.reduce(
     (sum, item) => sum + Number(item.pontos || 0),
@@ -61,35 +95,79 @@ export default function RankingClient() {
     (sum, item) => sum + Number(item.total || 0),
     0
   )
-  const lider = ranking[0]?.nome || ranking[0]?.name || "—"
+
+  const lider = ranking[0] ? getName(ranking[0]) : "—"
 
   return (
     <>
-      <div style={styles.grid}>
-        <div style={styles.card}>
-          <div style={styles.icon}>👥</div>
-          <strong style={styles.number}>{totalJogadores}</strong>
-          <p style={styles.label}>Jogadores</p>
+      <section style={styles.statsGrid}>
+        <div style={styles.statCard}>
+          <span style={styles.statIcon}>👥</span>
+          <strong style={styles.statNumber}>{totalJogadores}</strong>
+          <span style={styles.statLabel}>Jogadores</span>
         </div>
 
-        <div style={styles.card}>
-          <div style={styles.icon}>🏆</div>
-          <strong style={styles.number}>{pontosSomados}</strong>
-          <p style={styles.label}>Pontos somados</p>
+        <div style={styles.statCard}>
+          <span style={styles.statIcon}>🏆</span>
+          <strong style={styles.statNumber}>{pontosSomados}</strong>
+          <span style={styles.statLabel}>Pontos</span>
         </div>
 
-        <div style={styles.card}>
-          <div style={styles.icon}>🎯</div>
-          <strong style={styles.number}>{acertosRegistrados}</strong>
-          <p style={styles.label}>Acertos registrados</p>
+        <div style={styles.statCard}>
+          <span style={styles.statIcon}>🎯</span>
+          <strong style={styles.statNumber}>{acertosRegistrados}</strong>
+          <span style={styles.statLabel}>Acertos</span>
         </div>
-      </div>
+      </section>
 
-      <section style={styles.rankingCard}>
-        <h2 style={styles.sectionTitle}>Classificação</h2>
-        <p style={styles.leader}>Líder atual: {lider}</p>
+      <section style={styles.panel}>
+        <div style={styles.panelHeader}>
+          <div>
+            <h2 style={styles.sectionTitle}>Classificação</h2>
+            <p style={styles.leader}>Líder atual: {lider}</p>
+          </div>
 
-        <div style={styles.liveBadge}>● Ao vivo</div>
+          <span style={styles.liveBadge}>● Ao vivo</span>
+        </div>
+
+        {topThree.length > 0 && (
+          <div style={styles.podium}>
+            {topThree.map((player, index) => {
+              const name = getName(player)
+
+              return (
+                <a
+                  key={player.id}
+                  href={`/user/${player.id}`}
+                  style={{
+                    ...styles.podiumCard,
+                    ...(index === 0 ? styles.podiumFirst : {}),
+                  }}
+                >
+                  <span style={styles.medal}>{getMedal(index)}</span>
+
+                  <div style={styles.avatar}>{getInitials(name)}</div>
+
+                  <strong style={styles.podiumName}>{name}</strong>
+
+                  <span style={styles.podiumPoints}>
+                    {player.pontos || 0} pts
+                  </span>
+                </a>
+              )
+            })}
+          </div>
+        )}
+
+        <div style={styles.searchBox}>
+          <span style={styles.searchIcon}>🔎</span>
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Buscar jogador..."
+            style={styles.searchInput}
+          />
+        </div>
 
         <div style={styles.list}>
           {loading ? (
@@ -101,33 +179,42 @@ export default function RankingClient() {
               <strong>Erro ao carregar ranking</strong>
               <p>{error}</p>
             </div>
-          ) : ranking.length === 0 ? (
+          ) : filteredRanking.length === 0 ? (
             <div style={styles.empty}>
-              <strong>Nenhum ranking disponível</strong>
-              <p>A API respondeu, mas não retornou jogadores.</p>
+              <strong>Nenhum jogador encontrado</strong>
+              <p>Tente buscar por outro nome.</p>
             </div>
           ) : (
-            ranking.map((player, index) => (
-              <a
-                key={player.id}
-                href={`/user/${player.id}`}
-                style={styles.player}
-              >
-                <div style={styles.playerLeft}>
-                  <span style={styles.position}>#{index + 1}</span>
-                  <div>
-                    <strong style={styles.playerName}>
-                      {player.nome || player.name || "Torcedor"}
-                    </strong>
-                    <p style={styles.playerMeta}>
-                      {player.total || 0} acerto(s)
-                    </p>
-                  </div>
-                </div>
+            filteredRanking.map((player) => {
+              const realIndex = ranking.findIndex((item) => item.id === player.id)
+              const name = getName(player)
 
-                <strong style={styles.points}>{player.pontos || 0}</strong>
-              </a>
-            ))
+              return (
+                <a
+                  key={player.id}
+                  href={`/user/${player.id}`}
+                  style={styles.playerRow}
+                >
+                  <div style={styles.playerLeft}>
+                    <span style={styles.position}>{getMedal(realIndex)}</span>
+
+                    <div style={styles.smallAvatar}>{getInitials(name)}</div>
+
+                    <div>
+                      <strong style={styles.playerName}>{name}</strong>
+                      <p style={styles.playerMeta}>
+                        {player.total || 0} acerto(s)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={styles.scoreBox}>
+                    <strong>{player.pontos || 0}</strong>
+                    <span>pts</span>
+                  </div>
+                </a>
+              )
+            })
           )}
         </div>
       </section>
@@ -136,98 +223,217 @@ export default function RankingClient() {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  grid: {
+  statsGrid: {
     display: "grid",
-    gap: 16,
-    marginBottom: 28,
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: 10,
+    marginBottom: 20,
   },
-  card: {
-    background: "rgba(24,24,27,.92)",
+  statCard: {
+    background: "linear-gradient(180deg, #1b1b20, #111114)",
     border: "1px solid rgba(255,255,255,.08)",
-    borderRadius: 28,
-    padding: 24,
+    borderRadius: 22,
+    padding: "16px 12px",
+    minHeight: 116,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    boxShadow: "0 18px 40px rgba(0,0,0,.25)",
   },
-  icon: {
-    fontSize: 34,
-    marginBottom: 14,
+  statIcon: {
+    fontSize: 24,
   },
-  number: {
-    fontSize: 38,
+  statNumber: {
+    fontSize: 32,
+    lineHeight: 1,
     fontWeight: 900,
-    display: "block",
   },
-  label: {
-    margin: "8px 0 0",
+  statLabel: {
     color: "#a1a1aa",
-    fontSize: 20,
+    fontSize: 13,
+    fontWeight: 700,
   },
-  rankingCard: {
-    background: "rgba(9,9,11,.94)",
+  panel: {
+    background: "linear-gradient(180deg, rgba(15,15,18,.96), rgba(5,5,6,.96))",
     border: "1px solid rgba(255,255,255,.1)",
     borderRadius: 30,
-    padding: 24,
+    padding: 18,
+    boxShadow: "0 24px 70px rgba(0,0,0,.42)",
+  },
+  panelHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 12,
+    marginBottom: 18,
   },
   sectionTitle: {
     margin: 0,
-    fontSize: 34,
-    fontWeight: 900,
+    fontSize: 32,
+    fontWeight: 950,
+    letterSpacing: "-.04em",
   },
   leader: {
     color: "#a1a1aa",
-    fontSize: 20,
-    marginTop: 8,
+    fontSize: 16,
+    margin: "6px 0 0",
   },
   liveBadge: {
-    display: "inline-block",
-    marginTop: 18,
-    background: "rgba(127,29,29,.45)",
-    color: "#fca5a5",
-    border: "1px solid rgba(239,68,68,.35)",
+    background: "rgba(127,29,29,.55)",
+    color: "#fecaca",
+    border: "1px solid rgba(248,113,113,.35)",
     borderRadius: 999,
-    padding: "10px 16px",
-    fontWeight: 800,
+    padding: "9px 13px",
+    fontWeight: 900,
+    fontSize: 14,
+    whiteSpace: "nowrap",
+  },
+  podium: {
+    display: "grid",
+    gridTemplateColumns: "1.2fr 1fr 1fr",
+    gap: 10,
+    marginBottom: 16,
+  },
+  podiumCard: {
+    background: "#17171b",
+    border: "1px solid rgba(255,255,255,.08)",
+    borderRadius: 22,
+    padding: 14,
+    minHeight: 150,
+    textDecoration: "none",
+    color: "#fff",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    gap: 8,
+  },
+  podiumFirst: {
+    background:
+      "linear-gradient(180deg, rgba(127,29,29,.72), rgba(24,24,27,.95))",
+    border: "1px solid rgba(248,113,113,.35)",
+  },
+  medal: {
+    fontSize: 25,
+    fontWeight: 900,
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #ef4444, #7f1d1d)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 950,
+    fontSize: 18,
+    boxShadow: "0 12px 30px rgba(239,68,68,.25)",
+  },
+  podiumName: {
+    fontSize: 14,
+    lineHeight: 1.15,
+    maxWidth: "100%",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
+  podiumPoints: {
+    color: "#fca5a5",
+    fontWeight: 900,
+    fontSize: 13,
+  },
+  searchBox: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    background: "#0b0b0d",
+    border: "1px solid rgba(255,255,255,.08)",
+    borderRadius: 18,
+    padding: "0 14px",
+    marginBottom: 14,
+  },
+  searchIcon: {
+    opacity: 0.75,
+  },
+  searchInput: {
+    width: "100%",
+    background: "transparent",
+    border: 0,
+    outline: 0,
+    color: "#fff",
+    padding: "15px 0",
+    fontSize: 16,
   },
   list: {
-    marginTop: 22,
     display: "grid",
-    gap: 12,
+    gap: 10,
   },
-  player: {
+  playerRow: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 14,
-    background: "#18181b",
+    gap: 12,
+    background: "rgba(24,24,27,.9)",
     border: "1px solid rgba(255,255,255,.08)",
     borderRadius: 20,
-    padding: 16,
-    textDecoration: "none",
+    padding: 13,
     color: "#fff",
+    textDecoration: "none",
   },
   playerLeft: {
+    minWidth: 0,
     display: "flex",
     alignItems: "center",
-    gap: 14,
+    gap: 11,
   },
   position: {
-    color: "#f87171",
+    width: 38,
+    color: "#fca5a5",
+    fontWeight: 950,
+    fontSize: 16,
+  },
+  smallAvatar: {
+    width: 42,
+    height: 42,
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #3f3f46, #18181b)",
+    border: "1px solid rgba(255,255,255,.08)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     fontWeight: 900,
-    fontSize: 22,
+    fontSize: 13,
+    flexShrink: 0,
   },
   playerName: {
-    fontSize: 18,
+    display: "block",
+    fontSize: 16,
+    maxWidth: 170,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   playerMeta: {
-    margin: "4px 0 0",
+    margin: "3px 0 0",
     color: "#a1a1aa",
+    fontSize: 13,
   },
-  points: {
-    fontSize: 28,
+  scoreBox: {
+    minWidth: 58,
+    background: "#0b0b0d",
+    border: "1px solid rgba(255,255,255,.08)",
+    borderRadius: 16,
+    padding: "8px 10px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    lineHeight: 1,
   },
   empty: {
-    border: "1px dashed rgba(255,255,255,.2)",
-    borderRadius: 24,
-    padding: 28,
+    border: "1px dashed rgba(255,255,255,.18)",
+    borderRadius: 22,
+    padding: 26,
     textAlign: "center",
     color: "#d4d4d8",
   },
