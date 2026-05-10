@@ -10,127 +10,244 @@ type RankingItem = {
 
 type RankingApiResponse = {
   ok: boolean
+  total?: number
   ranking: RankingItem[]
 }
 
 async function getRanking(): Promise<RankingItem[]> {
-  const apiUrl = process.env.RANKING_API_URL
+  const baseUrl =
+    process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000"
 
-  if (!apiUrl) {
-    console.error("RANKING_API_URL não configurada")
+  const res = await fetch(`${baseUrl}/api/ranking`, {
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
     return []
   }
 
-  try {
-    const res = await fetch(apiUrl, {
-      cache: "no-store",
-      next: { revalidate: 0 },
-    })
+  const data = (await res.json()) as RankingApiResponse
 
-    if (!res.ok) {
-      console.error("Erro HTTP ranking_api:", res.status)
-      return []
-    }
-
-    const data = (await res.json()) as RankingApiResponse
-
-    if (!data.ok || !Array.isArray(data.ranking)) {
-      console.error("Resposta inválida da API:", data)
-      return []
-    }
-
-    return data.ranking
-  } catch (error) {
-    console.error("Erro ao buscar ranking:", error)
-    return []
-  }
+  return Array.isArray(data.ranking) ? data.ranking : []
 }
 
 export default async function Home() {
   const ranking = await getRanking()
 
   const totalJogadores = ranking.length
-  const pontosSomados = ranking.reduce((sum, item) => sum + Number(item.pontos || 0), 0)
-  const acertosRegistrados = ranking.reduce((sum, item) => sum + Number(item.total || 0), 0)
+  const pontosSomados = ranking.reduce(
+    (sum, item) => sum + Number(item.pontos || 0),
+    0
+  )
+  const acertosRegistrados = ranking.reduce(
+    (sum, item) => sum + Number(item.total || 0),
+    0
+  )
+
   const lider = ranking[0]?.nome || ranking[0]?.name || "—"
 
   return (
-    <main className="min-h-screen bg-black text-white px-6 py-8">
-      <section className="max-w-3xl mx-auto space-y-6">
-        <header>
-          <h1 className="text-4xl font-bold">Flamengo Gols</h1>
-          <p className="text-zinc-400 mt-2">Ranking geral do bolão</p>
+    <main style={styles.page}>
+      <section style={styles.container}>
+        <header style={styles.header}>
+          <h1 style={styles.title}>Flamengo Gols</h1>
+          <p style={styles.subtitle}>Ranking geral do bolão</p>
         </header>
 
-        <div className="grid gap-4">
-          <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6">
-            <div className="text-4xl mb-4">👥</div>
-            <strong className="text-4xl">{totalJogadores}</strong>
-            <p className="text-zinc-400 mt-2">Jogadores</p>
+        <div style={styles.grid}>
+          <div style={styles.card}>
+            <div style={styles.icon}>👥</div>
+            <strong style={styles.number}>{totalJogadores}</strong>
+            <p style={styles.label}>Jogadores</p>
           </div>
 
-          <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6">
-            <div className="text-4xl mb-4">🏆</div>
-            <strong className="text-4xl">{pontosSomados}</strong>
-            <p className="text-zinc-400 mt-2">Pontos somados</p>
+          <div style={styles.card}>
+            <div style={styles.icon}>🏆</div>
+            <strong style={styles.number}>{pontosSomados}</strong>
+            <p style={styles.label}>Pontos somados</p>
           </div>
 
-          <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6">
-            <div className="text-4xl mb-4">🎯</div>
-            <strong className="text-4xl">{acertosRegistrados}</strong>
-            <p className="text-zinc-400 mt-2">Acertos registrados</p>
+          <div style={styles.card}>
+            <div style={styles.icon}>🎯</div>
+            <strong style={styles.number}>{acertosRegistrados}</strong>
+            <p style={styles.label}>Acertos registrados</p>
           </div>
         </div>
 
-        <section className="rounded-3xl bg-zinc-950 border border-zinc-800 p-6">
-          <h2 className="text-3xl font-bold">Classificação</h2>
-          <p className="text-zinc-400 mt-2">Líder atual: {lider}</p>
+        <section style={styles.rankingCard}>
+          <h2 style={styles.sectionTitle}>Classificação</h2>
+          <p style={styles.leader}>Líder atual: {lider}</p>
 
-          <div className="inline-flex items-center gap-2 rounded-full bg-red-950 text-red-300 px-4 py-2 mt-5 font-bold">
-            <span className="w-2 h-2 rounded-full bg-red-400" />
-            Ao vivo
-          </div>
+          <div style={styles.liveBadge}>● Ao vivo</div>
 
-          <div className="mt-6 space-y-3">
+          <div style={styles.list}>
             {ranking.length === 0 ? (
-              <div className="border border-dashed border-zinc-700 rounded-3xl p-8 text-center">
-                <strong className="text-xl">Nenhum ranking disponível</strong>
-                <p className="text-zinc-400 mt-3">
-                  A API respondeu, mas não retornou jogadores.
-                </p>
+              <div style={styles.empty}>
+                <strong>Nenhum ranking disponível</strong>
+                <p>A API respondeu, mas não retornou jogadores.</p>
               </div>
             ) : (
               ranking.map((player, index) => (
                 <a
                   key={player.id}
                   href={`/user/${player.id}`}
-                  className="flex items-center justify-between gap-4 rounded-2xl bg-zinc-900 border border-zinc-800 p-4 no-underline text-white"
+                  style={styles.player}
                 >
-                  <div className="flex items-center gap-4">
-                    <span className="text-2xl font-bold text-red-400">
-                      #{index + 1}
-                    </span>
+                  <div style={styles.playerLeft}>
+                    <span style={styles.position}>#{index + 1}</span>
                     <div>
-                      <strong className="text-lg">
+                      <strong style={styles.playerName}>
                         {player.nome || player.name || "Torcedor"}
                       </strong>
-                      <p className="text-zinc-400 text-sm">
+                      <p style={styles.playerMeta}>
                         {player.total || 0} acerto(s)
                       </p>
                     </div>
                   </div>
 
-                  <strong className="text-2xl">{player.pontos || 0}</strong>
+                  <strong style={styles.points}>{player.pontos || 0}</strong>
                 </a>
               ))
             )}
           </div>
         </section>
 
-        <footer className="text-center text-zinc-500">
+        <footer style={styles.footer}>
           Feito para a Nação Rubro-Negra ⚫🔴
         </footer>
       </section>
     </main>
   )
+}
+
+const styles: Record<string, React.CSSProperties> = {
+  page: {
+    minHeight: "100vh",
+    background:
+      "radial-gradient(circle at top left, rgba(150,0,0,.35), transparent 35%), #050505",
+    color: "#fff",
+    padding: "28px 18px",
+    fontFamily:
+      "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  },
+  container: {
+    maxWidth: 760,
+    margin: "0 auto",
+  },
+  header: {
+    marginBottom: 28,
+  },
+  title: {
+    fontSize: 44,
+    lineHeight: 1,
+    margin: 0,
+    fontWeight: 900,
+  },
+  subtitle: {
+    marginTop: 14,
+    fontSize: 22,
+    color: "#d4d4d8",
+  },
+  grid: {
+    display: "grid",
+    gap: 16,
+    marginBottom: 28,
+  },
+  card: {
+    background: "rgba(24,24,27,.92)",
+    border: "1px solid rgba(255,255,255,.08)",
+    borderRadius: 28,
+    padding: 24,
+  },
+  icon: {
+    fontSize: 34,
+    marginBottom: 14,
+  },
+  number: {
+    fontSize: 38,
+    fontWeight: 900,
+    display: "block",
+  },
+  label: {
+    margin: "8px 0 0",
+    color: "#a1a1aa",
+    fontSize: 20,
+  },
+  rankingCard: {
+    background: "rgba(9,9,11,.94)",
+    border: "1px solid rgba(255,255,255,.1)",
+    borderRadius: 30,
+    padding: 24,
+  },
+  sectionTitle: {
+    margin: 0,
+    fontSize: 34,
+    fontWeight: 900,
+  },
+  leader: {
+    color: "#a1a1aa",
+    fontSize: 20,
+    marginTop: 8,
+  },
+  liveBadge: {
+    display: "inline-block",
+    marginTop: 18,
+    background: "rgba(127,29,29,.45)",
+    color: "#fca5a5",
+    border: "1px solid rgba(239,68,68,.35)",
+    borderRadius: 999,
+    padding: "10px 16px",
+    fontWeight: 800,
+  },
+  list: {
+    marginTop: 22,
+    display: "grid",
+    gap: 12,
+  },
+  player: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 14,
+    background: "#18181b",
+    border: "1px solid rgba(255,255,255,.08)",
+    borderRadius: 20,
+    padding: 16,
+    textDecoration: "none",
+    color: "#fff",
+  },
+  playerLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+  },
+  position: {
+    color: "#f87171",
+    fontWeight: 900,
+    fontSize: 22,
+  },
+  playerName: {
+    fontSize: 18,
+  },
+  playerMeta: {
+    margin: "4px 0 0",
+    color: "#a1a1aa",
+  },
+  points: {
+    fontSize: 28,
+  },
+  empty: {
+    border: "1px dashed rgba(255,255,255,.2)",
+    borderRadius: 24,
+    padding: 28,
+    textAlign: "center",
+    color: "#d4d4d8",
+  },
+  footer: {
+    textAlign: "center",
+    color: "#71717a",
+    marginTop: 28,
+  },
 }
