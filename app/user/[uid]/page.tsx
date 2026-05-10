@@ -1,223 +1,120 @@
-type RankingUser = {
-  id?: string;
-  uid?: string;
-  nome?: string;
-  name?: string;
-  pontos?: number;
-  total?: number;
-  posicao?: number;
-  position?: number;
-  acertos?: string[];
-};
-
-type UserApiResponse = {
-  ok?: boolean;
-  id?: string;
-  uid?: string;
-  nome?: string;
-  name?: string;
-  pontos?: number;
-  total?: number;
-  posicao?: number;
-  position?: number;
-  acertos?: string[];
-  user?: RankingUser;
-  jogador?: RankingUser;
-  data?: RankingUser;
-};
-
-function buildUserApiUrl(baseUrl: string, uid: string) {
-  if (baseUrl.includes("&sig=")) {
-    return baseUrl.replace(
-      "&sig=",
-      `&uid=${encodeURIComponent(uid)}&sig=`
-    );
-  }
-
-  if (baseUrl.includes("?sig=")) {
-    return baseUrl.replace(
-      "?sig=",
-      `?uid=${encodeURIComponent(uid)}&sig=`
-    );
-  }
-
-  const separator = baseUrl.includes("?") ? "&" : "?";
-
-  return `${baseUrl}${separator}uid=${encodeURIComponent(uid)}`;
+type RankingItem = {
+  id: string
+  uid?: string
+  nome: string
+  name?: string
+  pontos: number
+  total: number
+  acertos: string[]
 }
 
-function isRankingUser(value: unknown): value is RankingUser {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const obj = value as RankingUser;
-
-  return (
-    "uid" in obj ||
-    "id" in obj ||
-    "nome" in obj ||
-    "name" in obj ||
-    "pontos" in obj ||
-    "total" in obj ||
-    "posicao" in obj ||
-    "position" in obj ||
-    "acertos" in obj
-  );
+type RankingApiResponse = {
+  ok: boolean
+  ranking: RankingItem[]
 }
 
-async function getUser(uid: string): Promise<RankingUser | null> {
-  const baseUrl = process.env.RANKING_USER_API_BASE;
+async function getRanking(): Promise<RankingItem[]> {
+  const apiUrl = process.env.RANKING_API_URL
 
-  if (!baseUrl) {
-    return null;
+  if (!apiUrl) {
+    return []
   }
 
   try {
-    const url = buildUserApiUrl(baseUrl, uid);
-
-    const res = await fetch(url, {
+    const res = await fetch(apiUrl, {
       cache: "no-store",
-    });
+      next: { revalidate: 0 },
+    })
 
     if (!res.ok) {
-      return null;
+      return []
     }
 
-    const json: unknown = await res.json();
-
-    if (isRankingUser(json)) {
-      return json;
-    }
-
-    const data = json as UserApiResponse;
-
-    if (data.user) {
-      return data.user;
-    }
-
-    if (data.jogador) {
-      return data.jogador;
-    }
-
-    if (data.data) {
-      return data.data;
-    }
-
-    return null;
+    const data = (await res.json()) as RankingApiResponse
+    return Array.isArray(data.ranking) ? data.ranking : []
   } catch {
-    return null;
+    return []
   }
-}
-
-function getName(userData: RankingUser) {
-  return userData.nome || userData.name || "Jogador";
 }
 
 export default async function UserPage({
   params,
 }: {
-  params: Promise<{ uid: string }>;
+  params: Promise<{ uid: string }>
 }) {
-  const { uid } = await params;
+  const { uid } = await params
+  const ranking = await getRanking()
 
-  const userData = await getUser(uid);
+  const player = ranking.find((item) => {
+    return item.id === uid || item.uid === uid
+  })
 
-  if (!userData) {
+  if (!player) {
     return (
-      <main className="page">
-        <a className="back-link" href="/">
-          ⬅ Voltar ao ranking
-        </a>
+      <main className="min-h-screen bg-black text-white px-6 py-8">
+        <section className="max-w-3xl mx-auto">
+          <a href="/" className="text-red-400 font-bold">
+            ← Voltar
+          </a>
 
-        <section className="error-card">
-          <div>
-            <h1>❌ Usuário não encontrado</h1>
-            <p>
-              Não foi possível carregar este jogador. Verifique se
-              RANKING_USER_API_BASE está salva na Vercel e faça redeploy.
+          <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-8 mt-8 text-center">
+            <h1 className="text-3xl font-bold">Jogador não encontrado</h1>
+            <p className="text-zinc-400 mt-3">
+              Esse usuário não está no ranking atual.
             </p>
           </div>
         </section>
       </main>
-    );
+    )
   }
 
-  const nome = getName(userData);
-  const inicial = nome.charAt(0).toUpperCase();
-
-  const total = Number(userData.total || userData.pontos || 0);
-  const pontos = Number(userData.pontos || userData.total || 0);
-  const posicao = Number(userData.posicao || userData.position || 0);
-  const acertos = Array.isArray(userData.acertos) ? userData.acertos : [];
-
   return (
-    <main className="page">
-      <a className="back-link" href="/">
-        ⬅ Voltar ao ranking
-      </a>
+    <main className="min-h-screen bg-black text-white px-6 py-8">
+      <section className="max-w-3xl mx-auto space-y-6">
+        <a href="/" className="text-red-400 font-bold">
+          ← Voltar
+        </a>
 
-      <section className="profile-card">
-        <div className="profile-avatar">{inicial}</div>
+        <header className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6">
+          <h1 className="text-3xl font-bold">
+            {player.nome || player.name || "Torcedor"}
+          </h1>
+          <p className="text-zinc-400 mt-2">ID: {player.id}</p>
+        </header>
 
-        <span className="profile-tag">
-          {posicao > 0 ? `#${posicao} no ranking` : "Participante"}
-        </span>
-
-        <h1>{nome}</h1>
-
-        <p className="profile-subtitle">
-          Participante do bolão FlamengoGolsBot
-        </p>
-
-        <div className="profile-stats">
-          <div className="profile-stat">
-            <strong>{pontos}</strong>
-            <span>{pontos === 1 ? "Ponto" : "Pontos"}</span>
+        <div className="grid gap-4">
+          <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6">
+            <div className="text-4xl mb-4">🏆</div>
+            <strong className="text-4xl">{player.pontos || 0}</strong>
+            <p className="text-zinc-400 mt-2">Pontos</p>
           </div>
 
-          <div className="profile-stat">
-            <strong>{total}</strong>
-            <span>{total === 1 ? "Acerto" : "Acertos"}</span>
-          </div>
-
-          <div className="profile-stat">
-            <strong>{posicao > 0 ? posicao : "-"}</strong>
-            <span>Posição</span>
+          <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6">
+            <div className="text-4xl mb-4">🎯</div>
+            <strong className="text-4xl">{player.total || 0}</strong>
+            <p className="text-zinc-400 mt-2">Acertos</p>
           </div>
         </div>
+
+        <section className="rounded-3xl bg-zinc-950 border border-zinc-800 p-6">
+          <h2 className="text-2xl font-bold">Acertos registrados</h2>
+
+          <div className="mt-5 space-y-3">
+            {player.acertos.length === 0 ? (
+              <p className="text-zinc-400">Nenhum acerto registrado.</p>
+            ) : (
+              player.acertos.map((acerto, index) => (
+                <div
+                  key={index}
+                  className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4"
+                >
+                  ⚽ {acerto}
+                </div>
+              ))
+            )}
+          </div>
+        </section>
       </section>
-
-      <section className="history-section">
-        <div className="section-header">
-          <div>
-            <h2>Histórico de acertos</h2>
-            <p>Resultados acertados por este participante</p>
-          </div>
-
-          <span className="live-pill">🎯 Perfil</span>
-        </div>
-
-        {acertos.length === 0 ? (
-          <div className="empty-card">
-            <h3>Nenhum acerto listado</h3>
-            <p>Quando o jogador acertar um placar, aparecerá aqui.</p>
-          </div>
-        ) : (
-          <div className="history-list">
-            {acertos.map((item, index) => (
-              <div className="history-item" key={`${item}-${index}`}>
-                <strong>⚽ {item}</strong>
-                <span>Acerto #{index + 1}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <footer className="footer">
-        Perfil oficial do ranking FlamengoGolsBot ⚫🔴
-      </footer>
     </main>
-  );
+  )
 }
