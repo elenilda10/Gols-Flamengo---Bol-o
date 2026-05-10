@@ -52,8 +52,9 @@ function Avatar({
   size?: number
 }) {
   const name = getName(player)
+  const [failed, setFailed] = useState(false)
 
-  if (player.photo_file_id) {
+  if (player.photo_file_id && !failed) {
     return (
       <img
         src={`/api/avatar?file_id=${encodeURIComponent(player.photo_file_id)}`}
@@ -61,6 +62,8 @@ function Avatar({
         style={{
           width: size,
           height: size,
+          minWidth: size,
+          minHeight: size,
           borderRadius: "50%",
           objectFit: "cover",
           border: "1px solid rgba(255,255,255,.14)",
@@ -71,9 +74,7 @@ function Avatar({
               ? "0 12px 30px rgba(239,68,68,.25)"
               : "none",
         }}
-        onError={(event) => {
-          event.currentTarget.style.display = "none"
-        }}
+        onError={() => setFailed(true)}
       />
     )
   }
@@ -83,6 +84,8 @@ function Avatar({
       style={{
         width: size,
         height: size,
+        minWidth: size,
+        minHeight: size,
         borderRadius: "50%",
         background: "linear-gradient(135deg, #ef4444, #7f1d1d)",
         border: "1px solid rgba(255,255,255,.1)",
@@ -186,7 +189,7 @@ export default function RankingClient() {
 
       <section style={styles.panel}>
         <div style={styles.panelHeader}>
-          <div>
+          <div style={styles.panelTitleArea}>
             <h2 style={styles.sectionTitle}>Classificação</h2>
             <p style={styles.leader}>Líder atual: {lider}</p>
           </div>
@@ -278,8 +281,10 @@ export default function RankingClient() {
                   </div>
 
                   <div style={styles.scoreBox}>
-                    <strong>{player.pontos || 0}</strong>
-                    <span>pts</span>
+                    <strong style={styles.scoreNumber}>
+                      {player.pontos || 0}
+                    </strong>
+                    <span style={styles.scoreText}>pts</span>
                   </div>
                 </a>
               )
@@ -294,11 +299,14 @@ export default function RankingClient() {
 const styles: Record<string, React.CSSProperties> = {
   statsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
     gap: 10,
     marginBottom: 20,
+    width: "100%",
+    boxSizing: "border-box",
   },
   statCard: {
+    minWidth: 0,
     background: "linear-gradient(180deg, #1b1b20, #111114)",
     border: "1px solid rgba(255,255,255,.08)",
     borderRadius: 22,
@@ -308,6 +316,8 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: "column",
     justifyContent: "space-between",
     boxShadow: "0 18px 40px rgba(0,0,0,.25)",
+    boxSizing: "border-box",
+    overflow: "hidden",
   },
   statIcon: {
     fontSize: 24,
@@ -321,54 +331,76 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#a1a1aa",
     fontSize: 13,
     fontWeight: 700,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   panel: {
+    width: "100%",
+    boxSizing: "border-box",
     background:
       "linear-gradient(180deg, rgba(15,15,18,.96), rgba(5,5,6,.96))",
     border: "1px solid rgba(255,255,255,.1)",
     borderRadius: 30,
-    padding: 18,
+    padding: 14,
     boxShadow: "0 24px 70px rgba(0,0,0,.42)",
+    overflow: "hidden",
   },
   panelHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    gap: 12,
+    gap: 10,
     marginBottom: 18,
+    width: "100%",
+    boxSizing: "border-box",
+  },
+  panelTitleArea: {
+    minWidth: 0,
+    flex: 1,
   },
   sectionTitle: {
     margin: 0,
     fontSize: 32,
     fontWeight: 950,
     letterSpacing: "-.04em",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   leader: {
     color: "#a1a1aa",
     fontSize: 16,
     margin: "6px 0 0",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   liveBadge: {
     background: "rgba(127,29,29,.55)",
     color: "#fecaca",
     border: "1px solid rgba(248,113,113,.35)",
     borderRadius: 999,
-    padding: "9px 13px",
+    padding: "9px 12px",
     fontWeight: 900,
     fontSize: 14,
     whiteSpace: "nowrap",
+    flexShrink: 0,
   },
   podium: {
     display: "grid",
-    gridTemplateColumns: "1.2fr 1fr 1fr",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
     gap: 10,
     marginBottom: 16,
+    width: "100%",
+    boxSizing: "border-box",
   },
   podiumCard: {
+    minWidth: 0,
     background: "#17171b",
     border: "1px solid rgba(255,255,255,.08)",
     borderRadius: 22,
-    padding: 14,
+    padding: 12,
     minHeight: 158,
     textDecoration: "none",
     color: "#fff",
@@ -379,6 +411,7 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: "center",
     gap: 8,
     overflow: "hidden",
+    boxSizing: "border-box",
   },
   podiumFirst: {
     background:
@@ -403,6 +436,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 13,
   },
   searchBox: {
+    width: "100%",
+    boxSizing: "border-box",
     display: "flex",
     alignItems: "center",
     gap: 10,
@@ -411,11 +446,14 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 18,
     padding: "0 14px",
     marginBottom: 14,
+    overflow: "hidden",
   },
   searchIcon: {
     opacity: 0.75,
+    flexShrink: 0,
   },
   searchInput: {
+    minWidth: 0,
     width: "100%",
     background: "transparent",
     border: 0,
@@ -427,39 +465,51 @@ const styles: Record<string, React.CSSProperties> = {
   list: {
     display: "grid",
     gap: 10,
+    width: "100%",
+    boxSizing: "border-box",
   },
   playerRow: {
+    width: "100%",
+    boxSizing: "border-box",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 12,
+    gap: 10,
     background: "rgba(24,24,27,.9)",
     border: "1px solid rgba(255,255,255,.08)",
     borderRadius: 20,
-    padding: 13,
+    padding: 12,
     color: "#fff",
     textDecoration: "none",
+    overflow: "hidden",
   },
   playerLeft: {
     minWidth: 0,
+    flex: 1,
     display: "flex",
     alignItems: "center",
-    gap: 11,
+    gap: 10,
+    overflow: "hidden",
   },
   position: {
-    width: 38,
+    width: 32,
+    minWidth: 32,
     color: "#fca5a5",
     fontWeight: 950,
-    fontSize: 16,
+    fontSize: 15,
     flexShrink: 0,
+    overflow: "hidden",
+    whiteSpace: "nowrap",
   },
   playerInfo: {
     minWidth: 0,
+    flex: 1,
+    overflow: "hidden",
   },
   playerName: {
     display: "block",
     fontSize: 16,
-    maxWidth: 170,
+    maxWidth: "100%",
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
@@ -468,18 +518,30 @@ const styles: Record<string, React.CSSProperties> = {
     margin: "3px 0 0",
     color: "#a1a1aa",
     fontSize: 13,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   scoreBox: {
+    width: 58,
     minWidth: 58,
     background: "#0b0b0d",
     border: "1px solid rgba(255,255,255,.08)",
     borderRadius: 16,
-    padding: "8px 10px",
+    padding: "8px 8px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     lineHeight: 1,
     flexShrink: 0,
+    boxSizing: "border-box",
+  },
+  scoreNumber: {
+    fontSize: 22,
+    fontWeight: 950,
+  },
+  scoreText: {
+    fontSize: 14,
   },
   empty: {
     border: "1px dashed rgba(255,255,255,.18)",
@@ -487,5 +549,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: 26,
     textAlign: "center",
     color: "#d4d4d8",
+    boxSizing: "border-box",
+    overflow: "hidden",
   },
 }
