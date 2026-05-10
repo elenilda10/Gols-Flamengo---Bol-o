@@ -10,6 +10,7 @@ type RankingItem = {
   pontos: number
   total: number
   acertos: string[]
+  photo_file_id?: string
 }
 
 type RankingApiResponse = {
@@ -25,13 +26,15 @@ function getName(player: RankingItem) {
 }
 
 function getInitials(name: string) {
-  return name
+  const initials = name
     .trim()
     .split(" ")
     .slice(0, 2)
     .map((part) => part[0])
     .join("")
     .toUpperCase()
+
+  return initials || "?"
 }
 
 function getMedal(index: number) {
@@ -39,6 +42,65 @@ function getMedal(index: number) {
   if (index === 1) return "🥈"
   if (index === 2) return "🥉"
   return `#${index + 1}`
+}
+
+function Avatar({
+  player,
+  size = 42,
+}: {
+  player: RankingItem
+  size?: number
+}) {
+  const name = getName(player)
+
+  if (player.photo_file_id) {
+    return (
+      <img
+        src={`/api/avatar?file_id=${encodeURIComponent(player.photo_file_id)}`}
+        alt={name}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          objectFit: "cover",
+          border: "1px solid rgba(255,255,255,.14)",
+          background: "#18181b",
+          flexShrink: 0,
+          boxShadow:
+            size >= 50
+              ? "0 12px 30px rgba(239,68,68,.25)"
+              : "none",
+        }}
+        onError={(event) => {
+          event.currentTarget.style.display = "none"
+        }}
+      />
+    )
+  }
+
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: "linear-gradient(135deg, #ef4444, #7f1d1d)",
+        border: "1px solid rgba(255,255,255,.1)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: 900,
+        fontSize: size >= 50 ? 18 : 13,
+        flexShrink: 0,
+        boxShadow:
+          size >= 50
+            ? "0 12px 30px rgba(239,68,68,.25)"
+            : "none",
+      }}
+    >
+      {getInitials(name)}
+    </div>
+  )
 }
 
 export default function RankingClient() {
@@ -87,10 +149,12 @@ export default function RankingClient() {
   const topThree = ranking.slice(0, 3)
 
   const totalJogadores = ranking.length
+
   const pontosSomados = ranking.reduce(
     (sum, item) => sum + Number(item.pontos || 0),
     0
   )
+
   const acertosRegistrados = ranking.reduce(
     (sum, item) => sum + Number(item.total || 0),
     0
@@ -146,7 +210,7 @@ export default function RankingClient() {
                 >
                   <span style={styles.medal}>{getMedal(index)}</span>
 
-                  <div style={styles.avatar}>{getInitials(name)}</div>
+                  <Avatar player={player} size={58} />
 
                   <strong style={styles.podiumName}>{name}</strong>
 
@@ -161,6 +225,7 @@ export default function RankingClient() {
 
         <div style={styles.searchBox}>
           <span style={styles.searchIcon}>🔎</span>
+
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -186,7 +251,10 @@ export default function RankingClient() {
             </div>
           ) : (
             filteredRanking.map((player) => {
-              const realIndex = ranking.findIndex((item) => item.id === player.id)
+              const realIndex = ranking.findIndex(
+                (item) => item.id === player.id
+              )
+
               const name = getName(player)
 
               return (
@@ -198,10 +266,11 @@ export default function RankingClient() {
                   <div style={styles.playerLeft}>
                     <span style={styles.position}>{getMedal(realIndex)}</span>
 
-                    <div style={styles.smallAvatar}>{getInitials(name)}</div>
+                    <Avatar player={player} size={46} />
 
-                    <div>
+                    <div style={styles.playerInfo}>
                       <strong style={styles.playerName}>{name}</strong>
+
                       <p style={styles.playerMeta}>
                         {player.total || 0} acerto(s)
                       </p>
@@ -254,7 +323,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
   },
   panel: {
-    background: "linear-gradient(180deg, rgba(15,15,18,.96), rgba(5,5,6,.96))",
+    background:
+      "linear-gradient(180deg, rgba(15,15,18,.96), rgba(5,5,6,.96))",
     border: "1px solid rgba(255,255,255,.1)",
     borderRadius: 30,
     padding: 18,
@@ -299,7 +369,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid rgba(255,255,255,.08)",
     borderRadius: 22,
     padding: 14,
-    minHeight: 150,
+    minHeight: 158,
     textDecoration: "none",
     color: "#fff",
     display: "flex",
@@ -308,6 +378,7 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "center",
     textAlign: "center",
     gap: 8,
+    overflow: "hidden",
   },
   podiumFirst: {
     background:
@@ -317,18 +388,6 @@ const styles: Record<string, React.CSSProperties> = {
   medal: {
     fontSize: 25,
     fontWeight: 900,
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: "50%",
-    background: "linear-gradient(135deg, #ef4444, #7f1d1d)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: 950,
-    fontSize: 18,
-    boxShadow: "0 12px 30px rgba(239,68,68,.25)",
   },
   podiumName: {
     fontSize: 14,
@@ -392,19 +451,10 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#fca5a5",
     fontWeight: 950,
     fontSize: 16,
-  },
-  smallAvatar: {
-    width: 42,
-    height: 42,
-    borderRadius: "50%",
-    background: "linear-gradient(135deg, #3f3f46, #18181b)",
-    border: "1px solid rgba(255,255,255,.08)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: 900,
-    fontSize: 13,
     flexShrink: 0,
+  },
+  playerInfo: {
+    minWidth: 0,
   },
   playerName: {
     display: "block",
@@ -429,6 +479,7 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: "column",
     alignItems: "center",
     lineHeight: 1,
+    flexShrink: 0,
   },
   empty: {
     border: "1px dashed rgba(255,255,255,.18)",
