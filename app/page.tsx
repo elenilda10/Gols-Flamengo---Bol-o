@@ -1,209 +1,136 @@
 type RankingItem = {
-  id?: string;
-  uid?: string;
-  nome?: string;
-  name?: string;
-  pontos?: number;
-  total?: number;
-  acertos?: string[];
-};
+  id: string
+  uid?: string
+  nome: string
+  name?: string
+  pontos: number
+  total: number
+  acertos: string[]
+}
 
-type RankingResponse = {
-  ok?: boolean;
-  ranking?: RankingItem[];
-  data?:
-    | RankingItem[]
-    | {
-        ranking?: RankingItem[];
-      };
-};
+type RankingApiResponse = {
+  ok: boolean
+  ranking: RankingItem[]
+}
 
 async function getRanking(): Promise<RankingItem[]> {
-  const apiUrl = process.env.RANKING_API_URL;
+  const apiUrl = process.env.RANKING_API_URL
 
   if (!apiUrl) {
-    return [];
+    console.error("RANKING_API_URL não configurada")
+    return []
   }
 
   try {
     const res = await fetch(apiUrl, {
       cache: "no-store",
-    });
+      next: { revalidate: 0 },
+    })
 
     if (!res.ok) {
-      return [];
+      console.error("Erro HTTP ranking_api:", res.status)
+      return []
     }
 
-    const data: RankingResponse | RankingItem[] = await res.json();
+    const data = (await res.json()) as RankingApiResponse
 
-    if (Array.isArray(data)) {
-      return data;
+    if (!data.ok || !Array.isArray(data.ranking)) {
+      console.error("Resposta inválida da API:", data)
+      return []
     }
 
-    if (Array.isArray(data.ranking)) {
-      return data.ranking;
-    }
-
-    if (Array.isArray(data.data)) {
-      return data.data;
-    }
-
-    if (data.data && Array.isArray(data.data.ranking)) {
-      return data.data.ranking;
-    }
-
-    return [];
-  } catch {
-    return [];
+    return data.ranking
+  } catch (error) {
+    console.error("Erro ao buscar ranking:", error)
+    return []
   }
 }
 
-function getUserId(item: RankingItem, index: number) {
-  return String(item.id || item.uid || index);
-}
-
-function getUserName(item: RankingItem) {
-  return item.nome || item.name || "Jogador";
-}
-
-function getMedal(index: number) {
-  if (index === 0) return "🥇";
-  if (index === 1) return "🥈";
-  if (index === 2) return "🥉";
-  return "👤";
-}
-
-function getPositionClass(index: number) {
-  if (index === 0) return "rank-card first";
-  if (index === 1) return "rank-card second";
-  if (index === 2) return "rank-card third";
-  return "rank-card";
-}
-
 export default async function Home() {
-  const ranking = await getRanking();
+  const ranking = await getRanking()
 
-  const totalJogadores = ranking.length;
-
-  const totalPontos = ranking.reduce((sum, item) => {
-    return sum + Number(item.pontos || 0);
-  }, 0);
-
-  const totalAcertos = ranking.reduce((sum, item) => {
-    return sum + Number(item.total || item.pontos || 0);
-  }, 0);
-
-  const lider = ranking[0];
+  const totalJogadores = ranking.length
+  const pontosSomados = ranking.reduce((sum, item) => sum + Number(item.pontos || 0), 0)
+  const acertosRegistrados = ranking.reduce((sum, item) => sum + Number(item.total || 0), 0)
+  const lider = ranking[0]?.nome || ranking[0]?.name || "—"
 
   return (
-    <main className="page">
-      <section className="hero">
-        <div className="hero-badge">⚫ FlamengoGolsBot</div>
+    <main className="min-h-screen bg-black text-white px-6 py-8">
+      <section className="max-w-3xl mx-auto space-y-6">
+        <header>
+          <h1 className="text-4xl font-bold">Flamengo Gols</h1>
+          <p className="text-zinc-400 mt-2">Ranking geral do bolão</p>
+        </header>
 
-        <h1>Ranking do Bolão</h1>
-
-        <p>
-          Acompanhe em tempo real a classificação dos participantes do bolão.
-          Pontuação atualizada pelo bot oficial.
-        </p>
-
-        <div className="hero-actions">
-          <a
-            className="primary-btn"
-            href="https://t.me/FlamengoGolsBot"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Abrir Bot
-          </a>
-
-          <a className="secondary-btn" href="#ranking">
-            Ver Ranking
-          </a>
-        </div>
-      </section>
-
-      <section className="stats-grid">
-        <div className="stat-card">
-          <span>👥</span>
-          <strong>{totalJogadores}</strong>
-          <p>Jogadores</p>
-        </div>
-
-        <div className="stat-card">
-          <span>🏆</span>
-          <strong>{totalPontos}</strong>
-          <p>Pontos somados</p>
-        </div>
-
-        <div className="stat-card">
-          <span>🎯</span>
-          <strong>{totalAcertos}</strong>
-          <p>Acertos registrados</p>
-        </div>
-      </section>
-
-      <section className="ranking-section" id="ranking">
-        <div className="section-header">
-          <div>
-            <h2>Classificação</h2>
-            <p>
-              Líder atual:{" "}
-              <strong>{lider ? getUserName(lider) : "—"}</strong>
-            </p>
+        <div className="grid gap-4">
+          <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6">
+            <div className="text-4xl mb-4">👥</div>
+            <strong className="text-4xl">{totalJogadores}</strong>
+            <p className="text-zinc-400 mt-2">Jogadores</p>
           </div>
 
-          <span className="live-pill">● Ao vivo</span>
+          <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6">
+            <div className="text-4xl mb-4">🏆</div>
+            <strong className="text-4xl">{pontosSomados}</strong>
+            <p className="text-zinc-400 mt-2">Pontos somados</p>
+          </div>
+
+          <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6">
+            <div className="text-4xl mb-4">🎯</div>
+            <strong className="text-4xl">{acertosRegistrados}</strong>
+            <p className="text-zinc-400 mt-2">Acertos registrados</p>
+          </div>
         </div>
 
-        {ranking.length === 0 ? (
-          <div className="empty-card">
-            <h3>Nenhum ranking disponível</h3>
-            <p>
-              Verifique se a variável RANKING_API_URL está salva na Vercel e
-              faça redeploy.
-            </p>
-          </div>
-        ) : (
-          <div className="ranking-list">
-            {ranking.map((item, index) => {
-              const userId = getUserId(item, index);
-              const nome = getUserName(item);
-              const pontos = Number(item.pontos || 0);
-              const total = Number(item.total || item.pontos || 0);
+        <section className="rounded-3xl bg-zinc-950 border border-zinc-800 p-6">
+          <h2 className="text-3xl font-bold">Classificação</h2>
+          <p className="text-zinc-400 mt-2">Líder atual: {lider}</p>
 
-              return (
+          <div className="inline-flex items-center gap-2 rounded-full bg-red-950 text-red-300 px-4 py-2 mt-5 font-bold">
+            <span className="w-2 h-2 rounded-full bg-red-400" />
+            Ao vivo
+          </div>
+
+          <div className="mt-6 space-y-3">
+            {ranking.length === 0 ? (
+              <div className="border border-dashed border-zinc-700 rounded-3xl p-8 text-center">
+                <strong className="text-xl">Nenhum ranking disponível</strong>
+                <p className="text-zinc-400 mt-3">
+                  A API respondeu, mas não retornou jogadores.
+                </p>
+              </div>
+            ) : (
+              ranking.map((player, index) => (
                 <a
-                  key={`${userId}-${index}`}
-                  className={getPositionClass(index)}
-                  href={`/user/${encodeURIComponent(userId)}`}
+                  key={player.id}
+                  href={`/user/${player.id}`}
+                  className="flex items-center justify-between gap-4 rounded-2xl bg-zinc-900 border border-zinc-800 p-4 no-underline text-white"
                 >
-                  <div className="rank-left">
-                    <div className="rank-position">
-                      <span>{getMedal(index)}</span>
-                      <strong>#{index + 1}</strong>
-                    </div>
-
+                  <div className="flex items-center gap-4">
+                    <span className="text-2xl font-bold text-red-400">
+                      #{index + 1}
+                    </span>
                     <div>
-                      <h3>{nome}</h3>
-                      <p>{total} acerto(s)</p>
+                      <strong className="text-lg">
+                        {player.nome || player.name || "Torcedor"}
+                      </strong>
+                      <p className="text-zinc-400 text-sm">
+                        {player.total || 0} acerto(s)
+                      </p>
                     </div>
                   </div>
 
-                  <div className="rank-points">
-                    <strong>{pontos}</strong>
-                    <span>{pontos === 1 ? "ponto" : "pontos"}</span>
-                  </div>
+                  <strong className="text-2xl">{player.pontos || 0}</strong>
                 </a>
-              );
-            })}
+              ))
+            )}
           </div>
-        )}
-      </section>
+        </section>
 
-      <footer className="footer">
-        Feito para a Nação Rubro-Negra ⚫🔴
-      </footer>
+        <footer className="text-center text-zinc-500">
+          Feito para a Nação Rubro-Negra ⚫🔴
+        </footer>
+      </section>
     </main>
-  );
+  )
 }
