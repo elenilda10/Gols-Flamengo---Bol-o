@@ -160,12 +160,16 @@ export default function UserProfileClient({ uid }: { uid: string }) {
       </a>
 
       <section className="profile-card">
-        <div className="profile-main">
-          <Avatar player={player} />
+        <div className="profile-main profile-main-featured">
+          <div className="profile-rank-area">
+            <span className="profile-tag profile-tag-featured">
+              👑 #{rankingPosition || "-"} no ranking
+            </span>
 
-          <div>
-            <span className="profile-tag">#{rankingPosition || "-"} no ranking</span>
+            <Avatar player={player} />
+          </div>
 
+          <div className="profile-text-area">
             <h1>{name}</h1>
 
             <p className="profile-subtitle">
