@@ -16,18 +16,19 @@ export default function Home() {
           <h1>Bolão Rubro-Negro</h1>
 
           <p>
-            Ranking ao vivo dos palpites da Nação. Veja quem está liderando,
-            acompanhe os acertos e dispute ponto a ponto após cada jogo do Mengão.
+            Ranking ao vivo dos palpites da Nação. Participe pelo canal,
+            comente seu placar na postagem do bolão e acompanhe aqui quem está
+            liderando após cada jogo do Mengão.
           </p>
 
           <div className="hero-actions">
             <a
-              href="https://t.me/flamengogolsbot"
+              href="https://t.me/flamengo77"
               target="_blank"
               rel="noreferrer"
               className="hero-button primary"
             >
-              🤖 Abrir bot
+              📢 Ir para o canal
             </a>
 
             <a href="#ranking" className="hero-button secondary">
@@ -37,21 +38,27 @@ export default function Home() {
 
           <div className="hero-mini-grid">
             <div className="hero-mini-card">
-              <span>⚽</span>
-              <strong>Palpite</strong>
-              <p>Envie seu placar no bot.</p>
+              <span>📢</span>
+              <strong>Postagem do bolão</strong>
+              <p>
+                Após a escalação, o bot publica o bolão no canal Flamengo Gols.
+              </p>
+            </div>
+
+            <div className="hero-mini-card">
+              <span>💬</span>
+              <strong>Palpite nos comentários</strong>
+              <p>
+                Os participantes deixam o placar nos comentários da postagem.
+              </p>
             </div>
 
             <div className="hero-mini-card">
               <span>✅</span>
-              <strong>Acerto</strong>
-              <p>O bot confirma após o jogo.</p>
-            </div>
-
-            <div className="hero-mini-card">
-              <span>🏆</span>
-              <strong>Ranking</strong>
-              <p>A classificação atualiza ao vivo.</p>
+              <strong>Conferência automática</strong>
+              <p>
+                No fim do jogo, o bot confirma os palpites corretos.
+              </p>
             </div>
           </div>
         </div>
@@ -59,21 +66,27 @@ export default function Home() {
 
       <section className="info-strip">
         <div>
-          <span>🔥</span>
-          <strong>Disputa da Nação</strong>
-          <p>Participe, acerte o placar e suba na classificação.</p>
+          <span>🏆</span>
+          <strong>Ganhadores do jogo</strong>
+          <p>
+            Após a apuração, o bot publica os nomes dos participantes que acertaram.
+          </p>
         </div>
 
         <div>
-          <span>📸</span>
-          <strong>Perfil do torcedor</strong>
-          <p>Veja pontos, posição e histórico de acertos.</p>
+          <span>🔗</span>
+          <strong>Link de resgate</strong>
+          <p>
+            Os ganhadores recebem uma postagem com link obrigatório para resgatar.
+          </p>
         </div>
 
         <div>
-          <span>🔴⚫</span>
-          <strong>Feito para flamenguistas</strong>
-          <p>Visual rubro-negro e ranking direto do bot.</p>
+          <span>📈</span>
+          <strong>Ranking atualizado</strong>
+          <p>
+            Cada acerto soma pontos e atualiza a classificação geral do bolão.
+          </p>
         </div>
       </section>
 
@@ -85,12 +98,12 @@ export default function Home() {
           </div>
 
           <a
-            href="https://t.me/flamengogolsbot"
+            href="https://t.me/flamengo77"
             target="_blank"
             rel="noreferrer"
             className="ranking-heading-link"
           >
-            Participar pelo bot →
+            Participar pelo canal →
           </a>
         </div>
 
