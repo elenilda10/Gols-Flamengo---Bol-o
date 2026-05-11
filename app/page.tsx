@@ -44,58 +44,59 @@ export default function Home() {
               📊 Ver ranking
             </a>
           </div>
-
-          <div className="hero-mini-grid">
-            <div className="hero-mini-card">
-              <span>📢</span>
-              <strong>Postagem do bolão</strong>
-              <p>
-                Após a escalação, o bot publica o bolão no canal Flamengo Gols.
-              </p>
-            </div>
-
-            <div className="hero-mini-card">
-              <span>💬</span>
-              <strong>Palpite nos comentários</strong>
-              <p>
-                Os participantes deixam o placar nos comentários da postagem.
-              </p>
-            </div>
-
-            <div className="hero-mini-card">
-              <span>✅</span>
-              <strong>Conferência automática</strong>
-              <p>
-                No fim do jogo, o bot confirma os palpites corretos.
-              </p>
-            </div>
-          </div>
         </div>
       </section>
 
-      <section className="info-strip">
-        <div>
-          <span>🏆</span>
-          <strong>Ganhadores do jogo</strong>
+      <section className="how-section">
+        <div className="how-header">
+          <span className="section-kicker">⚽ Como participar</span>
+          <h2>O bolão acontece nos comentários do canal</h2>
           <p>
-            Após a apuração, o bot publica os nomes dos participantes que acertaram.
+            Após a escalação ser publicada, o bot libera a postagem do bolão.
+            Os palpites são feitos diretamente nos comentários dessa postagem.
           </p>
         </div>
 
-        <div>
-          <span>🔗</span>
-          <strong>Link de resgate</strong>
-          <p>
-            Os ganhadores recebem uma postagem com link obrigatório para resgatar.
-          </p>
-        </div>
+        <div className="how-grid">
+          <div className="how-card">
+            <span className="how-number">01</span>
+            <div className="how-icon">📢</div>
+            <h3>Postagem do bolão</h3>
+            <p>
+              O bot publica no canal Flamengo Gols a postagem oficial do bolão
+              após a escalação.
+            </p>
+          </div>
 
-        <div>
-          <span>📈</span>
-          <strong>Ranking atualizado</strong>
-          <p>
-            Cada acerto soma pontos e atualiza a classificação geral do bolão.
-          </p>
+          <div className="how-card">
+            <span className="how-number">02</span>
+            <div className="how-icon">💬</div>
+            <h3>Palpite nos comentários</h3>
+            <p>
+              Os participantes deixam o placar nos comentários da postagem
+              oficial do jogo.
+            </p>
+          </div>
+
+          <div className="how-card">
+            <span className="how-number">03</span>
+            <div className="how-icon">✅</div>
+            <h3>Apuração automática</h3>
+            <p>
+              No fim da partida, o bot confere os palpites certos e confirma os
+              ganhadores.
+            </p>
+          </div>
+
+          <div className="how-card">
+            <span className="how-number">04</span>
+            <div className="how-icon">🔗</div>
+            <h3>Link de resgate</h3>
+            <p>
+              Os ganhadores recebem uma postagem com link obrigatório para
+              concluir o resgate.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -104,6 +105,9 @@ export default function Home() {
           <div>
             <span className="section-kicker">📊 Classificação geral</span>
             <h2>Ranking do bolão</h2>
+            <p>
+              Cada acerto soma pontos e atualiza a classificação geral da Nação.
+            </p>
           </div>
 
           <a
