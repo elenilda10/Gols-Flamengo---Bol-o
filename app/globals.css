@@ -1003,3 +1003,98 @@ img {
     align-items: flex-start;
   }
 }
+/* ===============================
+   PROFILE FINAL POLISH
+================================ */
+
+.profile-card {
+  min-height: 188px;
+  display: flex;
+  align-items: center;
+}
+
+.profile-main {
+  width: 100%;
+}
+
+.profile-photo {
+  width: 118px;
+  height: 118px;
+  flex-basis: 118px;
+}
+
+.profile-card h1 {
+  font-size: clamp(42px, 7vw, 64px);
+}
+
+.profile-subtitle {
+  font-size: 17px;
+}
+
+.profile-stats {
+  margin-top: 22px;
+}
+
+.profile-stat {
+  min-height: 124px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.profile-stat > span:first-child {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.profile-stat strong {
+  font-size: 38px;
+}
+
+.profile-stat span:last-child {
+  font-size: 15px;
+}
+
+.history-section {
+  margin-top: 24px;
+}
+
+.history-item {
+  padding: 18px;
+}
+
+.history-item-number {
+  width: 46px;
+  height: 46px;
+  flex-basis: 46px;
+  font-size: 18px;
+}
+
+.history-item strong {
+  font-size: 17px;
+}
+
+.history-item span {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (max-width: 620px) {
+  .profile-card {
+    min-height: auto;
+  }
+
+  .profile-photo {
+    width: 108px;
+    height: 108px;
+    flex-basis: 108px;
+  }
+
+  .profile-card h1 {
+    font-size: clamp(38px, 13vw, 54px);
+  }
+
+  .profile-stat strong {
+    font-size: 34px;
+  }
+}
