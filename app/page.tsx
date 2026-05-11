@@ -63,7 +63,7 @@ export default function Home() {
             <div className="how-icon">📢</div>
             <h3>Postagem do bolão</h3>
             <p>
-              O bot publica no canal Flamengo Gols a postagem oficial do bolão
+              O bot publica no canal News Flamengo a postagem oficial do bolão
               após a escalação.
             </p>
           </div>
