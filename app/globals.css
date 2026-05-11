@@ -1098,3 +1098,46 @@ img {
     font-size: 34px;
   }
 }
+/* ===============================
+   PROFILE RANK FEATURED
+================================ */
+
+.profile-main-featured {
+  align-items: center;
+}
+
+.profile-rank-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  flex: 0 0 auto;
+}
+
+.profile-tag-featured {
+  font-size: 14px;
+  padding: 9px 14px;
+}
+
+.profile-text-area {
+  min-width: 0;
+}
+
+.profile-text-area h1 {
+  margin-top: 0;
+}
+
+@media (max-width: 620px) {
+  .profile-main-featured {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-rank-area {
+    width: 100%;
+  }
+
+  .profile-text-area {
+    width: 100%;
+  }
+}
