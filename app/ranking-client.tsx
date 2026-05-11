@@ -1,5 +1,6 @@
 "use client"
 
+import type React from "react"
 import { useEffect, useMemo, useState } from "react"
 
 type RankingItem = {
@@ -20,6 +21,9 @@ type RankingApiResponse = {
   status?: number
   preview?: string
 }
+
+const RANKING_API_URL =
+  "https://prod-api.telebothost.com/ownlang/webhook/22351677?command=ranking_api&sig=623c115af27121ecc3f10058d0e06d6122e703c692f002fc24795db6af325a9b"
 
 function getPlayerId(player: RankingItem) {
   return String(player.id || player.uid || "")
@@ -56,13 +60,12 @@ function Avatar({
   size?: number
 }) {
   const name = getName(player)
-  const playerId = getPlayerId(player)
   const [failed, setFailed] = useState(false)
 
-  if (playerId && !failed) {
+  if (player.photo_file_id && !failed) {
     return (
       <img
-        src={`/api/avatar?uid=${encodeURIComponent(playerId)}`}
+        src={`/api/avatar?file_id=${encodeURIComponent(player.photo_file_id)}`}
         alt=""
         draggable={false}
         onContextMenu={(event) => event.preventDefault()}
@@ -125,17 +128,11 @@ export default function RankingClient() {
   useEffect(() => {
     async function loadRanking() {
       try {
-        const res = await fetch("/api/ranking", {
+        const res = await fetch(RANKING_API_URL, {
           cache: "no-store",
         })
 
         const data = (await res.json()) as RankingApiResponse
-
-        if (!res.ok) {
-          setError(data.error || "Não foi possível carregar o ranking.")
-          setRanking([])
-          return
-        }
 
         if (!Array.isArray(data.ranking)) {
           setError("A API não retornou uma lista de jogadores.")
