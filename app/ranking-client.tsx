@@ -16,10 +16,14 @@ type RankingItem = {
 type RankingApiResponse = {
   ok: boolean
   ranking: RankingItem[]
+  error?: string
+  status?: number
+  preview?: string
 }
 
-const RANKING_API_URL =
-  "https://prod-api.telebothost.com/ownlang/webhook/22351677?command=ranking_api&sig=623c115af27121ecc3f10058d0e06d6122e703c692f002fc24795db6af325a9b"
+function getPlayerId(player: RankingItem) {
+  return String(player.id || player.uid || "")
+}
 
 function getName(player: RankingItem) {
   return player.nome || player.name || "Torcedor"
@@ -52,13 +56,16 @@ function Avatar({
   size?: number
 }) {
   const name = getName(player)
+  const playerId = getPlayerId(player)
   const [failed, setFailed] = useState(false)
 
-  if (player.photo_file_id && !failed) {
+  if (playerId && !failed) {
     return (
       <img
-        src={`/api/avatar?file_id=${encodeURIComponent(player.photo_file_id)}`}
-        alt={name}
+        src={`/api/avatar?uid=${encodeURIComponent(playerId)}`}
+        alt=""
+        draggable={false}
+        onContextMenu={(event) => event.preventDefault()}
         style={{
           width: size,
           height: size,
@@ -69,6 +76,10 @@ function Avatar({
           border: "1px solid rgba(255,255,255,.14)",
           background: "#18181b",
           flexShrink: 0,
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          WebkitUserDrag: "none",
+          pointerEvents: "none",
           boxShadow:
             size >= 50
               ? "0 12px 30px rgba(239,68,68,.25)"
@@ -115,11 +126,17 @@ export default function RankingClient() {
   useEffect(() => {
     async function loadRanking() {
       try {
-        const res = await fetch(RANKING_API_URL, {
+        const res = await fetch("/api/ranking", {
           cache: "no-store",
         })
 
         const data = (await res.json()) as RankingApiResponse
+
+        if (!res.ok) {
+          setError(data.error || "Não foi possível carregar o ranking.")
+          setRanking([])
+          return
+        }
 
         if (!Array.isArray(data.ranking)) {
           setError("A API não retornou uma lista de jogadores.")
@@ -201,11 +218,12 @@ export default function RankingClient() {
           <div style={styles.podium}>
             {topThree.map((player, index) => {
               const name = getName(player)
+              const playerId = getPlayerId(player)
 
               return (
                 <a
-                  key={player.id}
-                  href={`/user/${player.id}`}
+                  key={playerId}
+                  href={`/user/${playerId}`}
                   style={{
                     ...styles.podiumCard,
                     ...(index === 0 ? styles.podiumFirst : {}),
@@ -254,16 +272,18 @@ export default function RankingClient() {
             </div>
           ) : (
             filteredRanking.map((player) => {
-              const realIndex = ranking.findIndex(
-                (item) => item.id === player.id
-              )
+              const playerId = getPlayerId(player)
+
+              const realIndex = ranking.findIndex((item) => {
+                return getPlayerId(item) === playerId
+              })
 
               const name = getName(player)
 
               return (
                 <a
-                  key={player.id}
-                  href={`/user/${player.id}`}
+                  key={playerId}
+                  href={`/user/${playerId}`}
                   style={styles.playerRow}
                 >
                   <div style={styles.playerLeft}>
