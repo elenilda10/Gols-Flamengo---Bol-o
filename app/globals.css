@@ -1141,3 +1141,80 @@ img {
     width: 100%;
   }
 }
+/* ===============================
+   PROFILE FINAL LAYOUT FIX
+================================ */
+
+.profile-card {
+  min-height: 230px;
+  display: flex;
+  align-items: center;
+}
+
+.profile-main-featured {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  align-items: center;
+  gap: 34px;
+}
+
+.profile-rank-area {
+  align-items: center;
+}
+
+.profile-tag-featured {
+  align-self: flex-start;
+  margin-left: 0;
+  font-size: 14px;
+  padding: 9px 15px;
+}
+
+.profile-photo {
+  width: 124px;
+  height: 124px;
+  flex-basis: 124px;
+}
+
+.profile-text-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.profile-text-area h1 {
+  margin: 0 0 10px;
+  font-size: clamp(48px, 7vw, 72px);
+  line-height: 0.9;
+}
+
+.profile-subtitle {
+  font-size: 17px;
+}
+
+@media (max-width: 620px) {
+  .profile-card {
+    min-height: auto;
+  }
+
+  .profile-main-featured {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    text-align: center;
+  }
+
+  .profile-tag-featured {
+    align-self: center;
+  }
+
+  .profile-photo {
+    width: 108px;
+    height: 108px;
+    flex-basis: 108px;
+  }
+
+  .profile-text-area h1 {
+    font-size: clamp(40px, 13vw, 56px);
+  }
+}
