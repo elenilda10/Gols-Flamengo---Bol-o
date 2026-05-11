@@ -78,7 +78,6 @@ function Avatar({
           flexShrink: 0,
           userSelect: "none",
           WebkitUserSelect: "none",
-          WebkitUserDrag: "none",
           pointerEvents: "none",
           boxShadow:
             size >= 50
