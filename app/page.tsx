@@ -23,10 +23,19 @@ export default function Home() {
 
           <div className="hero-actions">
             <a
-              href="https://t.me/flamengo77"
+              href="https://t.me/flamengogolsbot"
               target="_blank"
               rel="noreferrer"
               className="hero-button primary"
+            >
+              🤖 Abrir bot
+            </a>
+
+            <a
+              href="https://t.me/flamengo77"
+              target="_blank"
+              rel="noreferrer"
+              className="hero-button channel"
             >
               📢 Ir para o canal
             </a>
