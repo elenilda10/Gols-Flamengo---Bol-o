@@ -2,76 +2,105 @@ import RankingClient from "./ranking-client"
 
 export default function Home() {
   return (
-    <main style={styles.page}>
-      <section style={styles.container}>
-        <header style={styles.hero}>
-          <div style={styles.badge}>🔴 Flamengo Gols</div>
+    <main className="site-shell">
+      <section className="hero-section">
+        <div className="hero-glow hero-glow-left" />
+        <div className="hero-glow hero-glow-right" />
 
-          <h1 style={styles.title}>Bolão Rubro-Negro</h1>
+        <div className="hero-content">
+          <div className="hero-topline">
+            <span className="brand-pill">🔴 Flamengo Gols</span>
+            <span className="live-pill-home">● Bolão ao vivo</span>
+          </div>
 
-          <p style={styles.subtitle}>
-            Ranking ao vivo dos palpites da Nação.
+          <h1>Bolão Rubro-Negro</h1>
+
+          <p>
+            Ranking ao vivo dos palpites da Nação. Veja quem está liderando,
+            acompanhe os acertos e dispute ponto a ponto após cada jogo do Mengão.
           </p>
-        </header>
+
+          <div className="hero-actions">
+            <a
+              href="https://t.me/flamengogolsbot"
+              target="_blank"
+              rel="noreferrer"
+              className="hero-button primary"
+            >
+              🤖 Abrir bot
+            </a>
+
+            <a href="#ranking" className="hero-button secondary">
+              📊 Ver ranking
+            </a>
+          </div>
+
+          <div className="hero-mini-grid">
+            <div className="hero-mini-card">
+              <span>⚽</span>
+              <strong>Palpite</strong>
+              <p>Envie seu placar no bot.</p>
+            </div>
+
+            <div className="hero-mini-card">
+              <span>✅</span>
+              <strong>Acerto</strong>
+              <p>O bot confirma após o jogo.</p>
+            </div>
+
+            <div className="hero-mini-card">
+              <span>🏆</span>
+              <strong>Ranking</strong>
+              <p>A classificação atualiza ao vivo.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="info-strip">
+        <div>
+          <span>🔥</span>
+          <strong>Disputa da Nação</strong>
+          <p>Participe, acerte o placar e suba na classificação.</p>
+        </div>
+
+        <div>
+          <span>📸</span>
+          <strong>Perfil do torcedor</strong>
+          <p>Veja pontos, posição e histórico de acertos.</p>
+        </div>
+
+        <div>
+          <span>🔴⚫</span>
+          <strong>Feito para flamenguistas</strong>
+          <p>Visual rubro-negro e ranking direto do bot.</p>
+        </div>
+      </section>
+
+      <section id="ranking" className="ranking-wrapper">
+        <div className="ranking-heading">
+          <div>
+            <span className="section-kicker">📊 Classificação geral</span>
+            <h2>Ranking do bolão</h2>
+          </div>
+
+          <a
+            href="https://t.me/flamengogolsbot"
+            target="_blank"
+            rel="noreferrer"
+            className="ranking-heading-link"
+          >
+            Participar pelo bot →
+          </a>
+        </div>
 
         <RankingClient />
-
-        <footer style={styles.footer}>
-          Feito para a Nação Rubro-Negra ⚫🔴
-        </footer>
       </section>
+
+      <footer className="site-footer">
+        <span>Feito para a Nação Rubro-Negra</span>
+        <strong>⚫🔴 Flamengo Gols</strong>
+      </footer>
     </main>
   )
-}
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    background:
-      "radial-gradient(circle at top left, rgba(185,28,28,.45), transparent 32%), radial-gradient(circle at bottom right, rgba(127,29,29,.28), transparent 30%), #030303",
-    color: "#fff",
-    padding: "26px 16px 38px",
-    fontFamily:
-      "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  },
-  container: {
-    maxWidth: 760,
-    margin: "0 auto",
-  },
-  hero: {
-    padding: "18px 2px 22px",
-  },
-  badge: {
-    display: "inline-flex",
-    alignItems: "center",
-    background: "rgba(127,29,29,.42)",
-    border: "1px solid rgba(248,113,113,.28)",
-    color: "#fecaca",
-    borderRadius: 999,
-    padding: "8px 13px",
-    fontWeight: 900,
-    fontSize: 14,
-    marginBottom: 16,
-  },
-  title: {
-    margin: 0,
-    fontSize: 46,
-    lineHeight: 0.95,
-    letterSpacing: "-.06em",
-    fontWeight: 1000,
-  },
-  subtitle: {
-    color: "#d4d4d8",
-    fontSize: 18,
-    lineHeight: 1.45,
-    margin: "14px 0 0",
-    maxWidth: 430,
-  },
-  footer: {
-    textAlign: "center",
-    color: "#71717a",
-    marginTop: 26,
-    fontSize: 15,
-    fontWeight: 700,
-  },
 }
