@@ -1218,3 +1218,33 @@ img {
     font-size: clamp(40px, 13vw, 56px);
   }
 }
+/* ===============================
+   PROFILE BADGE FINAL FIX
+================================ */
+
+.profile-rank-area {
+  width: 150px;
+}
+
+.profile-tag-featured {
+  min-width: 170px;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.profile-photo {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 620px) {
+  .profile-rank-area {
+    width: 100%;
+  }
+
+  .profile-tag-featured {
+    width: auto;
+    white-space: normal;
+  }
+}
