@@ -1248,3 +1248,60 @@ img {
     white-space: normal;
   }
 }
+
+/* ===============================
+   FLAMENGO - CARDS EXPLICATIVOS
+================================ */
+
+.how-card,
+.step-card,
+.info-card,
+.explanation-card,
+.feature-card,
+.workflow-card,
+.guide-card {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(35, 15, 17, 0.96),
+      rgba(12, 12, 14, 0.98)
+    ) !important;
+  border: 1px solid rgba(255, 70, 70, 0.18);
+  box-shadow:
+    0 20px 45px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* remove bolha/detalhe amarelo */
+.how-card::after,
+.step-card::after,
+.info-card::after,
+.explanation-card::after,
+.feature-card::after,
+.workflow-card::after,
+.guide-card::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* mantém só um brilho vermelho bem discreto */
+.how-card::before,
+.step-card::before,
+.info-card::before,
+.explanation-card::before,
+.feature-card::before,
+.workflow-card::before,
+.guide-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(255, 45, 45, 0.12),
+      transparent 42%
+    );
+}
