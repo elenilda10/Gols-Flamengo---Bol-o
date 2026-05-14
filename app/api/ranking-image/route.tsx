@@ -18,99 +18,181 @@ const ranking: RankingItem[] = [
   { nome: "Kaiquex", pontos: 138 },
   { nome: "Dimitri", pontos: 110 },
   { nome: "Glauber", pontos: 100 },
+  { nome: "Outro", pontos: 95 },
 ]
 
+function limitarNome(nome: string, max = 14) {
+  if (nome.length <= max) return nome
+  return nome.slice(0, max - 3) + "..."
+}
+
 export async function GET() {
-  const max = Math.max(...ranking.map((item) => item.pontos), 1)
+  const top10 = [...ranking]
+    .sort((a, b) => b.pontos - a.pontos)
+    .slice(0, 10)
+
+  const maxPontos = Math.max(...top10.map((item) => item.pontos), 1)
 
   return new ImageResponse(
     (
       <div
         style={{
           width: "1200px",
-          height: "675px",
+          height: "1200px",
           display: "flex",
           flexDirection: "column",
-          background: "linear-gradient(180deg, #050509 0%, #090821 100%)",
+          background:
+            "linear-gradient(180deg, #021b17 0%, #032722 45%, #062f29 100%)",
           color: "#ffffff",
-          fontFamily: "Arial",
+          fontFamily: "Arial, sans-serif",
           position: "relative",
-          padding: "54px 70px",
           overflow: "hidden",
+          padding: "56px",
         }}
       >
-        {/* fundo neon */}
+        {/* grid de fundo */}
         <div
           style={{
             position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: "170px",
-            background:
-              "linear-gradient(180deg, transparent, rgba(153, 35, 255, 0.18))",
+            inset: 0,
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)
+            `,
+            backgroundSize: "42px 42px",
+            opacity: 0.22,
+          }}
+        />
+
+        {/* glow */}
+        <div
+          style={{
+            position: "absolute",
+            width: "700px",
+            height: "700px",
+            borderRadius: "999px",
+            background: "rgba(255, 215, 0, 0.08)",
+            filter: "blur(90px)",
+            top: "-120px",
+            right: "-120px",
           }}
         />
 
         <div
           style={{
             position: "absolute",
-            left: "0px",
-            right: "0px",
-            bottom: "45px",
-            height: "2px",
-            background: "rgba(190, 35, 255, 0.55)",
+            width: "520px",
+            height: "520px",
+            borderRadius: "999px",
+            background: "rgba(34, 197, 94, 0.08)",
+            filter: "blur(90px)",
+            bottom: "-120px",
+            left: "-120px",
           }}
         />
 
-        <div
-          style={{
-            fontSize: "34px",
-            fontWeight: 900,
-            letterSpacing: "1.5px",
-            textAlign: "center",
-            marginBottom: "34px",
-          }}
-        >
-          CLASSIFICAÇÃO DE PONTUAÇÕES
-        </div>
-
+        {/* topo */}
         <div
           style={{
             display: "flex",
+            flexDirection: "column",
             position: "relative",
-            width: "100%",
-            height: "500px",
-            border: "3px solid rgba(110, 125, 255, 0.75)",
-            borderRadius: "38px",
-            background: "#171d43",
-            padding: "42px 52px",
-            boxShadow: "0 0 28px rgba(91, 111, 255, 0.45)",
+            zIndex: 2,
+            marginBottom: "32px",
           }}
         >
           <div
             style={{
-              position: "absolute",
-              left: "-52px",
-              top: "-68px",
-              fontSize: "92px",
+              display: "flex",
+              alignItems: "center",
+              fontSize: "28px",
+              fontWeight: 800,
+              color: "#f4d03f",
+              marginBottom: "18px",
             }}
           >
-            🏆
+            📊 Classificação geral
           </div>
 
           <div
             style={{
-              position: "absolute",
-              right: "-50px",
-              top: "-58px",
-              fontSize: "94px",
-              transform: "rotate(14deg)",
+              display: "flex",
+              fontSize: "72px",
+              fontWeight: 900,
+              lineHeight: 1,
+              marginBottom: "18px",
             }}
           >
-            🎮
+            Ranking do Bolão da Seleção
           </div>
 
+          <div
+            style={{
+              display: "flex",
+              fontSize: "30px",
+              lineHeight: 1.4,
+              color: "rgba(255,255,255,0.82)",
+              maxWidth: "980px",
+            }}
+          >
+            Top 10 torcedores com mais pontos no bolão. Cada acerto soma pontos
+            e atualiza a classificação geral da torcida brasileira.
+          </div>
+        </div>
+
+        {/* card principal */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            position: "relative",
+            zIndex: 2,
+            background: "rgba(3, 36, 32, 0.85)",
+            border: "2px solid rgba(178, 155, 52, 0.32)",
+            borderRadius: "34px",
+            padding: "34px 34px 30px 34px",
+            boxShadow: "0 18px 50px rgba(0,0,0,0.35)",
+            flex: 1,
+          }}
+        >
+          {/* cabeçalho do card */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "24px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                fontSize: "42px",
+                fontWeight: 900,
+                color: "#ffffff",
+              }}
+            >
+              🏆 Top 10 do ranking
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                fontSize: "24px",
+                fontWeight: 800,
+                padding: "10px 20px",
+                borderRadius: "999px",
+                background: "rgba(34, 197, 94, 0.16)",
+                border: "1px solid rgba(34, 197, 94, 0.34)",
+                color: "#dfffe8",
+              }}
+            >
+              ● Ao vivo
+            </div>
+          </div>
+
+          {/* lista */}
           <div
             style={{
               display: "flex",
@@ -119,53 +201,85 @@ export async function GET() {
               width: "100%",
             }}
           >
-            {ranking.map((item) => {
-              const width = Math.max(14, Math.round((item.pontos / max) * 100))
+            {top10.map((item, index) => {
+              const porcentagem = Math.max(
+                12,
+                Math.round((item.pontos / maxPontos) * 100)
+              )
+
+              const medalha =
+                index === 0
+                  ? "🥇"
+                  : index === 1
+                  ? "🥈"
+                  : index === 2
+                  ? "🥉"
+                  : `#${index + 1}`
 
               return (
                 <div
-                  key={item.nome}
+                  key={item.nome + index}
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    height: "38px",
                     width: "100%",
+                    minHeight: "66px",
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.05)",
+                    borderRadius: "18px",
+                    padding: "12px 16px",
                   }}
                 >
                   <div
                     style={{
-                      width: "150px",
-                      fontSize: "22px",
-                      fontWeight: 800,
-                      color: "#f4f5ff",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
+                      width: "88px",
+                      display: "flex",
+                      justifyContent: "center",
+                      fontSize: "26px",
+                      fontWeight: 900,
+                      color: "#f4d03f",
                     }}
                   >
-                    {item.nome}
+                    {medalha}
+                  </div>
+
+                  <div
+                    style={{
+                      width: "190px",
+                      display: "flex",
+                      fontSize: "28px",
+                      fontWeight: 800,
+                      color: "#ffffff",
+                    }}
+                  >
+                    {limitarNome(item.nome)}
                   </div>
 
                   <div
                     style={{
                       flex: 1,
-                      height: "38px",
                       display: "flex",
                       alignItems: "center",
+                      height: "38px",
+                      background: "rgba(255,255,255,0.05)",
+                      borderRadius: "999px",
+                      overflow: "hidden",
+                      marginLeft: "12px",
                     }}
                   >
                     <div
                       style={{
-                        width: `${width}%`,
-                        height: "38px",
-                        borderRadius: "11px",
-                        background:
-                          "linear-gradient(90deg, #5268b8 0%, #6768ee 100%)",
+                        width: `${porcentagem}%`,
+                        height: "100%",
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: width > 18 ? "center" : "flex-end",
-                        paddingRight: width <= 18 ? "10px" : "0px",
-                        color: "#ffffff",
-                        fontSize: "20px",
+                        justifyContent: porcentagem > 22 ? "center" : "flex-end",
+                        paddingRight: porcentagem > 22 ? "0px" : "12px",
+                        borderRadius: "999px",
+                        background:
+                          "linear-gradient(90deg, #d4af37 0%, #f4d03f 100%)",
+                        color: "#103b2e",
+                        fontSize: "24px",
                         fontWeight: 900,
                       }}
                     >
@@ -176,15 +290,35 @@ export async function GET() {
               )
             })}
           </div>
+
+          {/* rodapé */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: "26px",
+              fontSize: "22px",
+              color: "rgba(255,255,255,0.75)",
+            }}
+          >
+            <div style={{ display: "flex" }}>
+              🇧🇷 Gols Brasil | Bolão da Seleção
+            </div>
+
+            <div style={{ display: "flex", color: "#f4d03f", fontWeight: 800 }}>
+              Atualização em tempo real
+            </div>
+          </div>
         </div>
       </div>
     ),
     {
       width: 1200,
-      height: 675,
+      height: 1200,
       headers: {
         "Cache-Control": "no-store, max-age=0",
       },
     }
   )
-}
+                  }
