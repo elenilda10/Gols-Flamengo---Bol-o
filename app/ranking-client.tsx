@@ -22,7 +22,7 @@ type RankingApiResponse = {
   preview?: string
 }
 
-const const RANKING_API_URL =
+const RANKING_API_URL =
   "https://lucky-bar-5077.futvert.workers.dev/api/ranking_api"
 
 
