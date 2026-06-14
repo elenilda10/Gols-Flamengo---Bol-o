@@ -19,7 +19,8 @@ type RankingApiResponse = {
 }
 
 const RANKING_API_URL =
-  "https://prod-api.telebothost.com/ownlang/webhook/22351677?command=ranking_api&sig=623c115af27121ecc3f10058d0e06d6122e703c692f002fc24795db6af325a9b"
+  "https://lucky-bar-5077.futvert.workers.dev/api/ranking_api"
+
 
 function getName(player: RankingItem) {
   return player.nome || player.name || "Torcedor"
