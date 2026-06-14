@@ -23,7 +23,7 @@ type RankingApiResponse = {
 }
 
 const RANKING_API_URL =
-  "https://prod-api.telebothost.com/ownlang/webhook/22351677?command=ranking_api&sig=623c115af27121ecc3f10058d0e06d6122e703c692f002fc24795db6af325a9b"
+  "https://lucky-bar-5077.futvert.workers.dev/api/ranking_user_public_api"
 
 function getPlayerId(player: RankingItem) {
   return String(player.id || player.uid || "")
