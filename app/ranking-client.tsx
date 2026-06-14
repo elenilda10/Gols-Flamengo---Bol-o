@@ -22,8 +22,9 @@ type RankingApiResponse = {
   preview?: string
 }
 
-const RANKING_API_URL =
-  "https://lucky-bar-5077.futvert.workers.dev/api/ranking_user_public_api"
+const const RANKING_API_URL =
+  "https://lucky-bar-5077.futvert.workers.dev/api/ranking_api"
+
 
 function getPlayerId(player: RankingItem) {
   return String(player.id || player.uid || "")
