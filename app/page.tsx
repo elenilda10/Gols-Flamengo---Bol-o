@@ -12,7 +12,6 @@ export default function Home() {
   const [jogoIniciado, setJogoIniciado] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
 
-  // Inicializa o tema salvo
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme")
     if (savedTheme === "dark") {
@@ -24,7 +23,6 @@ export default function Home() {
     }
   }, [])
 
-  // Alternador de tema
   const toggleTheme = () => {
     if (isDarkMode) {
       document.body.classList.remove("dark")
@@ -37,7 +35,6 @@ export default function Home() {
     }
   }
 
-  // Busca dados do admin
   useEffect(() => {
     fetch("/api/proximo-jogo")
       .then((res) => res.json())
@@ -49,7 +46,6 @@ export default function Home() {
       .catch(() => {})
   }, [])
 
-  // Cronômetro
   useEffect(() => {
     if (!dataJogoStr) return
     const dataAlvo = new Date(dataJogoStr)
@@ -105,7 +101,7 @@ export default function Home() {
         <h1 style={{ fontSize: "24px", fontWeight: 950, margin: 0, letterSpacing: "-0.04em", color: "var(--text-main)" }}>
           FLAMENGO GOLS
         </h1>
-        <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: "4px 0 0 0", fontWeight: 700, uppercase: true }}>
+        <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: "4px 0 0 0", fontWeight: 700 }}>
           O BOLÃO ABERTO OFICIAL DA NAÇÃO
         </p>
       </header>
@@ -127,7 +123,7 @@ export default function Home() {
       <section className="ranking-section" style={{ padding: "18px 16px" }}>
         <div className="section-header" style={{ marginBottom: "16px", borderBottom: "1px solid var(--border-color)", paddingBottom: "10px" }}>
           <h2 style={{ fontSize: "14px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>⚔️ Próximo Confronto</h2>
-          <span className="pulse-badge live-pill" style={{ background: jogoInicited ? "rgba(204,20,20,0.08)" : "rgba(46,125,50,0.08)", color: jogoIniciado ? "var(--crf-red)" : "#2e7d32", padding: "4px 10px", fontSize: "11px", fontWeight: 800, borderRadius: "6px", border: "none" }}>
+          <span className="pulse-badge live-pill" style={{ background: jogoIniciado ? "rgba(204,20,20,0.08)" : "rgba(46,125,50,0.08)", color: jogoIniciado ? "var(--crf-red)" : "#2e7d32", padding: "4px 10px", fontSize: "11px", fontWeight: 800, borderRadius: "6px", border: "none" }}>
             {jogoIniciado ? "Em Andamento" : "Inscrições Abertas"}
           </span>
         </div>
@@ -141,7 +137,7 @@ export default function Home() {
               style={{ width: "52px", height: "52px", objectFit: "contain", marginBottom: "6px" }} 
               onError={(e) => { (e.target as HTMLImageElement).src = "https://s.sde.globo.com/media/organizations/2018/04/10/flamengo_60x60.png" }}
             />
-            <strong style={{ fontSize: "13px", display: "block", tracking: "0.5px" }}>FLAMENGO</strong>
+            <strong style={{ fontSize: "13px", display: "block" }}>FLAMENGO</strong>
           </div>
           
           <div className="rank-position" style={{ width: "36px", height: "36px", borderRadius: "10px", fontWeight: 900, fontSize: "11px", color: "var(--text-muted)" }}>
@@ -155,11 +151,11 @@ export default function Home() {
               style={{ width: "52px", height: "52px", objectFit: "contain", marginBottom: "6px" }} 
               onError={(e) => { (e.target as HTMLImageElement).src = "https://s.sde.globo.com/media/organizations/default_60x60.png" }}
             />
-            <strong style={{ fontSize: "13px", display: "block", tracking: "0.5px" }}>{adversario}</strong>
+            <strong style={{ fontSize: "13px", display: "block" }}>{adversario}</strong>
           </div>
         </div>
 
-        {/* Cronômetro Compacto */}
+        {/* Cronômetro com Fonte de Placar Profissional */}
         {!jogoIniciado ? (
           <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "14px" }}>
             <span style={{ display: "block", fontSize: "10px", color: "var(--text-muted)", fontWeight: 800, textTransform: "uppercase", textAlign: "center", marginBottom: "10px", letterSpacing: "0.5px" }}>
@@ -167,19 +163,19 @@ export default function Home() {
             </span>
             <div style={{ display: "flex", gap: "6px" }}>
               <div style={{ background: "var(--bg-input)", padding: "10px 6px", borderRadius: "10px", flex: 1, textAlign: "center" }}>
-                <strong style={{ fontSize: "18px", display: "block", color: "var(--crf-red)", fontWeight: 900 }}>{String(timeLeft.dias).padStart(2, "0")}</strong>
+                <strong className="font-scoreboard" style={{ fontSize: "24px", display: "block", color: "var(--crf-red)", fontWeight: 900 }}>{String(timeLeft.dias).padStart(2, "0")}</strong>
                 <span style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: 700 }}>Dias</span>
               </div>
               <div style={{ background: "var(--bg-input)", padding: "10px 6px", borderRadius: "10px", flex: 1, textAlign: "center" }}>
-                <strong style={{ fontSize: "18px", display: "block", fontWeight: 900 }}>{String(timeLeft.horas).padStart(2, "0")}</strong>
+                <strong className="font-scoreboard" style={{ fontSize: "24px", display: "block", fontWeight: 900 }}>{String(timeLeft.horas).padStart(2, "0")}</strong>
                 <span style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: 700 }}>Horas</span>
               </div>
               <div style={{ background: "var(--bg-input)", padding: "10px 6px", borderRadius: "10px", flex: 1, textAlign: "center" }}>
-                <strong style={{ fontSize: "18px", display: "block", fontWeight: 900 }}>{String(timeLeft.minutos).padStart(2, "0")}</strong>
+                <strong className="font-scoreboard" style={{ fontSize: "24px", display: "block", fontWeight: 900 }}>{String(timeLeft.minutos).padStart(2, "0")}</strong>
                 <span style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: 700 }}>Min</span>
               </div>
               <div style={{ background: "var(--bg-input)", padding: "10px 6px", borderRadius: "10px", flex: 1, textAlign: "center" }}>
-                <strong style={{ fontSize: "18px", display: "block", color: "var(--rank-points-color)", fontWeight: 900 }}>{String(timeLeft.segundos).padStart(2, "0")}</strong>
+                <strong className="font-scoreboard" style={{ fontSize: "24px", display: "block", color: "var(--rank-points-color)", fontWeight: 900 }}>{String(timeLeft.segundos).padStart(2, "0")}</strong>
                 <span style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: 700 }}>Seg</span>
               </div>
             </div>
@@ -221,7 +217,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🏆 TABELA GERAL REESTRUTURADA */}
+      {/* 🏆 TABELA GERAL */}
       <section id="ranking" className="ranking-wrapper" style={{ marginTop: "12px" }}>
         <div className="ranking-heading" style={{ paddingLeft: "4px", marginBottom: "12px" }}>
           <div>
