@@ -8,6 +8,20 @@
 
 /* ☀️ TEMA CLARO PREMIUM (PADRÃO) */
 :root {
+  --crf-red: #cc1414; /* 🚀 Adicionado para corrigir os botões no modo claro */
+  --crf-gold: #b38f43;
+  /* ... mantenha o restante das variáveis do :root igual ... */
+
+/* 🌙 TEMA ESCURO CARBONO */
+body.dark {
+  --crf-red: #ef4444; /* 🚀 Adicionado para o modo escuro */
+  --crf-gold: #ffcc33;
+  /* ... mantenha o restante das variáveis do body.dark igual ... */
+
+
+
+/* ☀️ TEMA CLARO PREMIUM (PADRÃO) */
+:root {
   --bg-main: #f4f6f9;
   --bg-body-gradient: radial-gradient(circle at 12% 8%, rgba(229, 9, 20, 0.04), transparent 28%),
                       radial-gradient(circle at 88% 18%, rgba(127, 29, 29, 0.03), transparent 30%),
