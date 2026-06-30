@@ -1,30 +1,37 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@vercel/kv" // 🚀 Mudamos para a conexão manual blindada
+import { createClient } from "@vercel/kv"
 
-// Procura e conecta no banco usando qualquer variação de nome que a Vercel tenha gerado
+// 🚀 Força a rota a ser 100% dinâmica e desativa o cache do Next.js/Vercel no build
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+// Conecta no banco usando qualquer variação de nome que a Vercel tenha gerado
 const kv = createClient({
   url: process.env.KV_REST_API_URL || process.env.KV_URL || process.env.UPSTASH_REDIS_REST_URL || "",
   token: process.env.KV_REST_API_TOKEN || process.env.KV_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || ""
 })
 
-const dadosPadrao = {
-  timeCasa: "FLAMENGO",
-  logoCasaUrl: "https://s.sde.globo.com/media/organizations/2018/04/10/flamengo_60x60.png",
-  timeFora: "PALMEIRAS",
-  logoForaUrl: "https://s.sde.globo.com/media/organizations/2014/04/14/palmeiras_60x60.png",
-  data: "2026-07-15T21:45:00",
-  campeonato: "Campeonato Brasileiro",
-  rodada: "14ª",
-  transmissao: "Globo, Premiere",
-  proximos: []
+// Configuração de headers para impedir que o navegador salve o estado antigo localmente
+const cacheHeaders = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+  'Pragma': 'no-cache',
+  'Expires': '0',
 }
 
 export async function GET() {
   try {
     const dadosSalvos = await kv.get("dados_config_bolao")
-    return NextResponse.json(dadosSalvos || dadosPadrao)
+    
+    // Se não houver dados salvos no banco, retorna null em vez de dados mocados antigos.
+    // Isso ativa o estado de carregamento/aviso no frontend sem dar a piscada ("flicker").
+    if (!dadosSalvos) {
+      return NextResponse.json(null, { headers: cacheHeaders })
+    }
+
+    return NextResponse.json(dadosSalvos, { headers: cacheHeaders })
   } catch {
-    return NextResponse.json(dadosPadrao)
+    // Em caso de erro na conexão com o banco, também retorna null por segurança
+    return NextResponse.json(null, { headers: cacheHeaders })
   }
 }
 
