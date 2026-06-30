@@ -131,8 +131,8 @@ export default function AdminPainel() {
       data: dataFormatada,
       campeonato: campeonato.trim(),
       rodada: rodada.trim(),
-      transmissao: transmission.trim() || "A definir",
-      proximos: proximosJogos, // Envia a lista completa de jogos futuros atualizada
+      transmissao: transmissao.trim() || "A definir", // ✨ CORRIGIDO DE 'transmission' PARA 'transmissao'
+      proximos: proximosJogos,
       senha
     }
 
@@ -289,7 +289,7 @@ export default function AdminPainel() {
                 <div style={{ padding: "14px", border: "1px dashed var(--border-color)", borderRadius: "12px", textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>Nenhum jogo na agenda futura.</div>
               ) : (
                 proximosJogos.map((jogo, index) => (
-                  <div key={index} style={{ display: "flex", alignItems: "center", justifyConten: "space-between", background: "var(--bg-input)", padding: "10px 12px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
+                  <div key={index} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-input)", padding: "10px 12px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
                     <div style={{ flex: 1, minWidth: 0, fontSize: "12px" }}>
                       <strong style={{ color: "var(--text-main)" }}>FLAMENGO x {jogo.adversario}</strong>
                       <span style={{ display: "block", color: "var(--text-muted)", fontSize: "11px" }}>{jogo.campeonato} • {jogo.transmissao}</span>
