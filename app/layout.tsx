@@ -28,17 +28,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* 🚀 IMPORTAÇÃO DA POPPINS (TEXTOS) + BARLOW CONDENSED (NÚMEROS ESPORTIVOS) */}
         <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet" />
       </head>
       <body>
         {children}
       </body>
-    </html>
-  )
-}
-    <html lang="pt-BR">
-      <body>{children}</body>
     </html>
   )
 }
