@@ -25,7 +25,6 @@ type RankingApiResponse = {
 const RANKING_API_URL =
   "https://lucky-bar-5077.futvert.workers.dev/api/ranking_api"
 
-
 function getPlayerId(player: RankingItem) {
   return String(player.id || player.uid || "")
 }
@@ -77,16 +76,13 @@ function Avatar({
           minHeight: size,
           borderRadius: "50%",
           objectFit: "cover",
-          border: "1px solid rgba(255,255,255,.14)",
-          background: "#18181b",
+          border: "1px solid var(--border-color)",
+          background: "var(--bg-input)",
           flexShrink: 0,
           userSelect: "none",
           WebkitUserSelect: "none",
           pointerEvents: "none",
-          boxShadow:
-            size >= 50
-              ? "0 12px 30px rgba(239,68,68,.25)"
-              : "none",
+          boxShadow: size >= 50 ? "0 8px 24px rgba(204,20,20,0.15)" : "none",
         }}
         onError={() => setFailed(true)}
       />
@@ -101,18 +97,16 @@ function Avatar({
         minWidth: size,
         minHeight: size,
         borderRadius: "50%",
-        background: "linear-gradient(135deg, #ef4444, #7f1d1d)",
+        background: "linear-gradient(135deg, var(--crf-red), #7f1d1d)",
         border: "1px solid rgba(255,255,255,.1)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        color: "#fff",
         fontWeight: 900,
         fontSize: size >= 50 ? 18 : 13,
         flexShrink: 0,
-        boxShadow:
-          size >= 50
-            ? "0 12px 30px rgba(239,68,68,.25)"
-            : "none",
+        boxShadow: size >= 50 ? "0 8px 24px rgba(204,20,20,0.15)" : "none",
       }}
     >
       {getInitials(name)}
@@ -125,6 +119,10 @@ export default function RankingClient() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [search, setSearch] = useState("")
+  
+  // 📱 Estados para o Menu Lateral e Filtros Dinâmicos
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [filterType, setFilterType] = useState<"todos" | "top10">("todos")
 
   useEffect(() => {
     async function loadRanking() {
@@ -153,34 +151,77 @@ export default function RankingClient() {
     loadRanking()
   }, [])
 
+  // Processa a busca e os filtros baseados no tipo selecionado
   const filteredRanking = useMemo(() => {
+    let result = [...ranking]
+
+    if (filterType === "top10") {
+      result = result.slice(0, 10)
+    }
+
     const term = search.trim().toLowerCase()
+    if (!term) return result
 
-    if (!term) return ranking
-
-    return ranking.filter((player) => {
+    return result.filter((player) => {
       return getName(player).toLowerCase().includes(term)
     })
-  }, [ranking, search])
+  }, [ranking, search, filterType])
 
   const topThree = ranking.slice(0, 3)
-
   const totalJogadores = ranking.length
-
-  const pontosSomados = ranking.reduce(
-    (sum, item) => sum + Number(item.pontos || 0),
-    0
-  )
-
-  const acertosRegistrados = ranking.reduce(
-    (sum, item) => sum + Number(item.total || 0),
-    0
-  )
-
+  const pontosSomados = ranking.reduce((sum, item) => sum + Number(item.pontos || 0), 0)
+  const acertosRegistrados = ranking.reduce((sum, item) => sum + Number(item.total || 0), 0)
   const lider = ranking[0] ? getName(ranking[0]) : "—"
 
   return (
     <>
+      {/* 🍔 BOTÃO GATILHO DO MENU LATERAL FLUTUANTE */}
+      <button 
+        onClick={() => setIsSidebarOpen(true)}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          background: "var(--crf-red)",
+          color: "#fff",
+          border: "none",
+          borderRadius: "50%",
+          width: "52px",
+          height: "52px",
+          fontSize: "22px",
+          boxShadow: "0 4px 16px rgba(204,20,20,0.3)",
+          cursor: "pointer",
+          zIndex: 999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        ☰
+      </button>
+
+      {/* 🚪 ESTRUTURA DO MENU LATERAL DESLIZANTE */}
+      {isSidebarOpen && (
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1000, transition: "0.3s" }} onClick={() => setIsSidebarOpen(false)}>
+          <div 
+            style={{ width: "280px", height: "100%", backgroundColor: "var(--bg-card)", padding: "24px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "20px", boxShadow: "4px 0 24px rgba(0,0,0,0.2)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-color)", paddingBottom: "12px" }}>
+              <strong style={{ color: "var(--text-main)", fontSize: "16px" }}>Navegação</strong>
+              <button onClick={() => setIsSidebarOpen(false)} style={{ background: "transparent", border: "none", color: "var(--text-muted)", fontSize: "18px", cursor: "pointer" }}>✕</button>
+            </div>
+            <nav style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <a href="/" style={{ color: "var(--text-main)", textDecoration: "none", padding: "12px", background: "var(--bg-input)", borderRadius: "10px", fontSize: "14px", fontWeight: 600 }}>🏠 Tela Inicial</a>
+              <a href="https://t.me/flamengogolsbot" target="_blank" rel="noreferrer" style={{ color: "var(--text-main)", textDecoration: "none", padding: "12px", borderRadius: "10px", fontSize: "14px" }}>🤖 Bot do Telegram</a>
+              <a href="https://t.me/flamengo77" target="_blank" rel="noreferrer" style={{ color: "var(--text-main)", textDecoration: "none", padding: "12px", borderRadius: "10px", fontSize: "14px" }}>📢 Canal Oficial</a>
+              <a href="/admin" style={{ color: "var(--crf-gold)", textDecoration: "none", padding: "12px", borderRadius: "10px", fontSize: "14px", fontWeight: 700 }}>🛠️ Painel Admin</a>
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* GRID DE STATS DUAL-THEME */}
       <section style={styles.statsGrid}>
         <div style={styles.statCard}>
           <span style={styles.statIcon}>👥</span>
@@ -201,16 +242,17 @@ export default function RankingClient() {
         </div>
       </section>
 
+      {/* PAINEL DA CLASSIFICAÇÃO */}
       <section style={styles.panel}>
         <div style={styles.panelHeader}>
           <div style={styles.panelTitleArea}>
             <h2 style={styles.sectionTitle}>Classificação</h2>
-            <p style={styles.leader}>Líder atual: {lider}</p>
+            <p style={styles.leader}>Líder atual: <span style={{color: "var(--crf-red)", fontWeight: 700}}>{lider}</span></p>
           </div>
-
           <span style={styles.liveBadge}>● Ao vivo</span>
         </div>
 
+        {/* PODIUM INTEGRADO AO DESIGN DINÂMICO */}
         {topThree.length > 0 && (
           <div style={styles.podium}>
             {topThree.map((player, index) => {
@@ -227,12 +269,9 @@ export default function RankingClient() {
                   }}
                 >
                   <span style={styles.medal}>{getMedal(index)}</span>
-
-                  <Avatar player={player} size={58} />
-
+                  <Avatar player={player} size={52} />
                   <strong style={styles.podiumName}>{name}</strong>
-
-                  <span style={styles.podiumPoints}>
+                  <span style={{...styles.podiumPoints, color: index === 0 ? "var(--crf-red)" : "var(--text-muted)"}}>
                     {player.pontos || 0} pts
                   </span>
                 </a>
@@ -241,9 +280,25 @@ export default function RankingClient() {
           </div>
         )}
 
+        {/* 🎛️ FILTROS RÁPIDOS DE EXIBIÇÃO */}
+        <div style={{ display: "flex", gap: "6px", marginBottom: "14px" }}>
+          <button 
+            onClick={() => setFilterType("todos")}
+            style={{ flex: 1, padding: "8px", borderRadius: "10px", border: "none", fontSize: "12px", fontWeight: 700, cursor: "pointer", background: filterType === "todos" ? "var(--crf-red)" : "var(--bg-input)", color: filterType === "todos" ? "#fff" : "var(--text-muted)", transition: "0.2s" }}
+          >
+            📋 Todos
+          </button>
+          <button 
+            onClick={() => setFilterType("top10")}
+            style={{ flex: 1, padding: "8px", borderRadius: "10px", border: "none", fontSize: "12px", fontWeight: 700, cursor: "pointer", background: filterType === "top10" ? "var(--crf-red)" : "var(--bg-input)", color: filterType === "top10" ? "#fff" : "var(--text-muted)", transition: "0.2s" }}
+          >
+            🔥 Top 10
+          </button>
+        </div>
+
+        {/* BARRA DE BUSCA ADAPTÁVEL */}
         <div style={styles.searchBox}>
           <span style={styles.searchIcon}>🔎</span>
-
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -252,55 +307,33 @@ export default function RankingClient() {
           />
         </div>
 
+        {/* LISTAGEM PRINCIPAL */}
         <div style={styles.list}>
           {loading ? (
-            <div style={styles.empty}>
-              <strong>Carregando ranking...</strong>
-            </div>
+            <div style={styles.empty}><strong>Carregando ranking...</strong></div>
           ) : error ? (
-            <div style={styles.empty}>
-              <strong>Erro ao carregar ranking</strong>
-              <p>{error}</p>
-            </div>
+            <div style={styles.empty}><strong>Erro ao carregar ranking</strong><p>{error}</p></div>
           ) : filteredRanking.length === 0 ? (
-            <div style={styles.empty}>
-              <strong>Nenhum jogador encontrado</strong>
-              <p>Tente buscar por outro nome.</p>
-            </div>
+            <div style={styles.empty}><strong>Nenhum jogador encontrado</strong><p>Tente buscar por outro nome.</p></div>
           ) : (
             filteredRanking.map((player) => {
               const playerId = getPlayerId(player)
-
-              const realIndex = ranking.findIndex((item) => {
-                return getPlayerId(item) === playerId
-              })
-
+              const realIndex = ranking.findIndex((item) => getPlayerId(item) === playerId)
               const name = getName(player)
 
               return (
-                <a
-                  key={playerId}
-                  href={`/user/${playerId}`}
-                  style={styles.playerRow}
-                >
+                <a key={playerId} href={`/user/${playerId}`} style={styles.playerRow}>
                   <div style={styles.playerLeft}>
                     <span style={styles.position}>{getMedal(realIndex)}</span>
-
-                    <Avatar player={player} size={46} />
-
+                    <Avatar player={player} size={42} />
                     <div style={styles.playerInfo}>
                       <strong style={styles.playerName}>{name}</strong>
-
-                      <p style={styles.playerMeta}>
-                        {player.total || 0} acerto(s)
-                      </p>
+                      <p style={styles.playerMeta}>{player.total || 0} acerto(s)</p>
                     </div>
                   </div>
 
                   <div style={styles.scoreBox}>
-                    <strong style={styles.scoreNumber}>
-                      {player.pontos || 0}
-                    </strong>
+                    <strong style={styles.scoreNumber}>{player.pontos || 0}</strong>
                     <span style={styles.scoreText}>pts</span>
                   </div>
                 </a>
@@ -318,173 +351,107 @@ const styles: Record<string, React.CSSProperties> = {
     display: "grid",
     gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
     gap: 10,
-    marginBottom: 20,
+    marginBottom: 16,
     width: "100%",
     boxSizing: "border-box",
   },
   statCard: {
     minWidth: 0,
-    background: "linear-gradient(180deg, #1b1b20, #111114)",
-    border: "1px solid rgba(255,255,255,.08)",
-    borderRadius: 22,
-    padding: "16px 12px",
-    minHeight: 116,
+    background: "var(--bg-card)",
+    border: "1px solid var(--border-color)",
+    borderRadius: 20,
+    padding: "14px 10px",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "space-between",
-    boxShadow: "0 18px 40px rgba(0,0,0,.25)",
+    gap: "4px",
+    boxShadow: "var(--shadow-card)",
     boxSizing: "border-box",
-    overflow: "hidden",
   },
-  statIcon: {
-    fontSize: 24,
-  },
-  statNumber: {
-    fontSize: 32,
-    lineHeight: 1,
-    fontWeight: 900,
-  },
-  statLabel: {
-    color: "#a1a1aa",
-    fontSize: 13,
-    fontWeight: 700,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
+  statIcon: { fontSize: 20 },
+  statNumber: { fontSize: 24, fontWeight: 900, color: "var(--text-main)" },
+  statLabel: { color: "var(--text-muted)", fontSize: 11, fontWeight: 700 },
   panel: {
     width: "100%",
     boxSizing: "border-box",
-    background:
-      "linear-gradient(180deg, rgba(15,15,18,.96), rgba(5,5,6,.96))",
-    border: "1px solid rgba(255,255,255,.1)",
-    borderRadius: 30,
-    padding: 14,
-    boxShadow: "0 24px 70px rgba(0,0,0,.42)",
-    overflow: "hidden",
+    background: "var(--bg-card)",
+    border: "1px solid var(--border-color)",
+    borderRadius: 24,
+    padding: 16,
+    boxShadow: "var(--shadow-card)",
   },
   panelHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
     gap: 10,
-    marginBottom: 18,
+    marginBottom: 14,
     width: "100%",
-    boxSizing: "border-box",
   },
-  panelTitleArea: {
-    minWidth: 0,
-    flex: 1,
-  },
-  sectionTitle: {
-    margin: 0,
-    fontSize: 32,
-    fontWeight: 950,
-    letterSpacing: "-.04em",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-  leader: {
-    color: "#a1a1aa",
-    fontSize: 16,
-    margin: "6px 0 0",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
+  panelTitleArea: { minWidth: 0, flex: 1 },
+  sectionTitle: { margin: 0, fontSize: 22, fontWeight: 900, color: "var(--text-main)" },
+  leader: { color: "var(--text-muted)", fontSize: 13, margin: "4px 0 0" },
   liveBadge: {
-    background: "rgba(127,29,29,.55)",
-    color: "#fecaca",
-    border: "1px solid rgba(248,113,113,.35)",
-    borderRadius: 999,
-    padding: "9px 12px",
-    fontWeight: 900,
-    fontSize: 14,
-    whiteSpace: "nowrap",
-    flexShrink: 0,
+    background: "rgba(204,20,20,0.1)",
+    color: "var(--crf-red)",
+    borderRadius: 8,
+    padding: "6px 10px",
+    fontWeight: 800,
+    fontSize: 11,
+    textTransform: "uppercase",
+    border: "1px solid rgba(204,20,20,0.15)"
   },
   podium: {
     display: "grid",
     gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-    gap: 10,
-    marginBottom: 16,
+    gap: 8,
+    marginBottom: 14,
     width: "100%",
-    boxSizing: "border-box",
   },
   podiumCard: {
     minWidth: 0,
-    background: "#17171b",
-    border: "1px solid rgba(255,255,255,.08)",
-    borderRadius: 22,
-    padding: 12,
-    minHeight: 158,
+    background: "var(--bg-input)",
+    border: "1px solid var(--border-color)",
+    borderRadius: 16,
+    padding: "12px 8px",
     textDecoration: "none",
-    color: "#fff",
+    color: "var(--text-main)",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
+    gap: "6px",
     textAlign: "center",
-    gap: 8,
-    overflow: "hidden",
     boxSizing: "border-box",
   },
   podiumFirst: {
-    background:
-      "linear-gradient(180deg, rgba(127,29,29,.72), rgba(24,24,27,.95))",
-    border: "1px solid rgba(248,113,113,.35)",
+    border: "1px solid var(--crf-red)",
+    boxShadow: "0 4px 14px rgba(204,20,20,0.08)"
   },
-  medal: {
-    fontSize: 25,
-    fontWeight: 900,
-  },
-  podiumName: {
-    fontSize: 14,
-    lineHeight: 1.15,
-    maxWidth: "100%",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-  podiumPoints: {
-    color: "#fca5a5",
-    fontWeight: 900,
-    fontSize: 13,
-  },
+  medal: { fontSize: 20, fontWeight: 900 },
+  podiumName: { fontSize: 12, fontWeight: 700, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+  podiumPoints: { fontWeight: 800, fontSize: 11 },
   searchBox: {
     width: "100%",
     boxSizing: "border-box",
     display: "flex",
     alignItems: "center",
     gap: 10,
-    background: "#0b0b0d",
-    border: "1px solid rgba(255,255,255,.08)",
-    borderRadius: 18,
-    padding: "0 14px",
-    marginBottom: 14,
-    overflow: "hidden",
+    background: "var(--bg-input)",
+    border: "1px solid var(--border-color)",
+    borderRadius: 12,
+    padding: "0 12px",
+    marginBottom: 12,
   },
-  searchIcon: {
-    opacity: 0.75,
-    flexShrink: 0,
-  },
+  searchIcon: { opacity: 0.5 },
   searchInput: {
-    minWidth: 0,
     width: "100%",
     background: "transparent",
     border: 0,
     outline: 0,
-    color: "#fff",
-    padding: "15px 0",
-    fontSize: 16,
+    color: "var(--text-main)",
+    padding: "12px 0",
+    fontSize: 14,
   },
-  list: {
-    display: "grid",
-    gap: 10,
-    width: "100%",
-    boxSizing: "border-box",
-  },
+  list: { display: "grid", gap: 8, width: "100%" },
   playerRow: {
     width: "100%",
     boxSizing: "border-box",
@@ -492,81 +459,31 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: "center",
     justifyContent: "space-between",
     gap: 10,
-    background: "rgba(24,24,27,.9)",
-    border: "1px solid rgba(255,255,255,.08)",
-    borderRadius: 20,
-    padding: 12,
-    color: "#fff",
-    textDecoration: "none",
-    overflow: "hidden",
-  },
-  playerLeft: {
-    minWidth: 0,
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    overflow: "hidden",
-  },
-  position: {
-    width: 32,
-    minWidth: 32,
-    color: "#fca5a5",
-    fontWeight: 950,
-    fontSize: 15,
-    flexShrink: 0,
-    overflow: "hidden",
-    whiteSpace: "nowrap",
-  },
-  playerInfo: {
-    minWidth: 0,
-    flex: 1,
-    overflow: "hidden",
-  },
-  playerName: {
-    display: "block",
-    fontSize: 16,
-    maxWidth: "100%",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-  playerMeta: {
-    margin: "3px 0 0",
-    color: "#a1a1aa",
-    fontSize: 13,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-  scoreBox: {
-    width: 58,
-    minWidth: 58,
-    background: "#0b0b0d",
-    border: "1px solid rgba(255,255,255,.08)",
+    background: "var(--bg-card)",
+    border: "1px solid var(--border-color)",
     borderRadius: 16,
-    padding: "8px 8px",
+    padding: 10,
+    color: "var(--text-main)",
+    textDecoration: "none",
+  },
+  playerLeft: { minWidth: 0, flex: 1, display: "flex", alignItems: "center", gap: 10 },
+  position: { width: 28, minWidth: 28, color: "var(--text-muted)", fontWeight: 800, fontSize: 13, textAlign: "center" },
+  playerInfo: { minWidth: 0, flex: 1 },
+  playerName: { display: "block", fontSize: 14, fontWeight: 700, color: "var(--text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+  playerMeta: { margin: "2px 0 0", color: "var(--text-muted)", fontSize: 11 },
+  scoreBox: {
+    width: 48,
+    minWidth: 48,
+    background: "var(--bg-input)",
+    border: "1px solid var(--border-color)",
+    borderRadius: 10,
+    padding: "6px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     lineHeight: 1,
-    flexShrink: 0,
-    boxSizing: "border-box",
   },
-  scoreNumber: {
-    fontSize: 22,
-    fontWeight: 950,
-  },
-  scoreText: {
-    fontSize: 14,
-  },
-  empty: {
-    border: "1px dashed rgba(255,255,255,.18)",
-    borderRadius: 22,
-    padding: 26,
-    textAlign: "center",
-    color: "#d4d4d8",
-    boxSizing: "border-box",
-    overflow: "hidden",
-  },
+  scoreNumber: { fontSize: 16, fontWeight: 900, color: "var(--text-main)" },
+  scoreText: { fontSize: 10, color: "var(--text-muted)", marginTop: "2px" },
+  empty: { border: "1px dashed var(--border-color)", borderRadius: 16, padding: 20, textAlign: "center", color: "var(--text-muted)", fontSize: 13 },
 }
