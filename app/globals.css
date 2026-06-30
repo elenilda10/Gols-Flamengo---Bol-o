@@ -750,3 +750,10 @@ img {
   .profile-rank-area { width: 100%; }
   .profile-tag-featured { width: auto; white-space: normal; }
 }
+
+/* 🏟️ CLASSE DE PLACAR PROFISSIONAL (ADICIONAR NO FINAL DO GLOBALS.CSS) */
+.font-scoreboard {
+  font-family: 'Barlow Condensed', Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
