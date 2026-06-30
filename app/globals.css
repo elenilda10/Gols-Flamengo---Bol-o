@@ -1,3 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   🧱 MAPEAMENTO DE VARIÁVEIS DINÂMICAS (DUAL-THEME)
+   ========================================================================== */
+
+/* ☀️ TEMA CLARO PREMIUM (PADRÃO) */
+:root {
+  --bg-main: #f4f6f9;
+  --bg-body-gradient: radial-gradient(circle at 12% 8%, rgba(229, 9, 20, 0.04), transparent 28%),
+                      radial-gradient(circle at 88% 18%, rgba(127, 29, 29, 0.03), transparent 30%),
+                      linear-gradient(135deg, #f4f6f9 0%, #eef1f6 100%);
+  --grid-color: rgba(0, 0, 0, 0.02);
+  
+  --bg-card: #ffffff;
+  --bg-card-gradient: linear-gradient(180deg, #ffffff 0%, #fcfdfe 100%);
+  --bg-input: #edf0f5;
+  --border-color: rgba(0, 0, 0, 0.07);
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.03);
+
+  --text-main: #1c1e21;
+  --text-muted: #606770;
+
+  --brand-pill-bg: rgba(204, 20, 20, 0.07);
+  --brand-pill-text: #cc1414;
+  --brand-pill-border: rgba(204, 20, 20, 0.15);
+
+  --rank-card-bg: #ffffff;
+  --rank-card-first: linear-gradient(135deg, rgba(255, 204, 51, 0.12), #ffffff 80%);
+  --rank-card-second: linear-gradient(135deg, rgba(200, 200, 200, 0.08), #ffffff 80%);
+  --rank-card-third: linear-gradient(135deg, rgba(190, 110, 50, 0.08), #ffffff 80%);
+  --rank-pos-bg: #edf0f5;
+  --rank-points-color: #b38f43;
+
+  --how-card-bg: linear-gradient(180deg, #ffffff, #f7f9fc);
+  --how-card-border: rgba(204, 20, 20, 0.1);
+}
+
+/* 🌙 TEMA ESCURO CARBONO (ATIVADO VIA CLASSE .dark NO BODY) */
+body.dark {
+  --bg-main: #060606;
+  --bg-body-gradient: radial-gradient(circle at 12% 8%, rgba(229, 9, 20, 0.36), transparent 28%),
+                      radial-gradient(circle at 88% 18%, rgba(127, 29, 29, 0.32), transparent 30%),
+                      radial-gradient(circle at 50% 100%, rgba(239, 68, 68, 0.12), transparent 38%),
+                      linear-gradient(135deg, #060606 0%, #170303 42%, #030303 100%);
+  --grid-color: rgba(255, 255, 255, 0.025);
+
+  --bg-card: #141417;
+  --bg-card-gradient: linear-gradient(180deg, rgba(24, 24, 27, 0.92), rgba(8, 8, 10, 0.96));
+  --bg-input: #1d1d22;
+  --border-color: rgba(255, 255, 255, 0.09);
+  --shadow-card: 0 28px 80px rgba(0, 0, 0, 0.36);
+
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.65);
+
+  --brand-pill-bg: rgba(127, 29, 29, 0.62);
+  --brand-pill-text: #fecaca;
+  --brand-pill-border: rgba(248, 113, 113, 0.32);
+
+  --rank-card-bg: rgba(16, 16, 16, 0.82);
+  --rank-card-first: linear-gradient(135deg, rgba(255, 204, 51, 0.22), rgba(16, 16, 16, 0.9));
+  --rank-card-second: linear-gradient(135deg, rgba(200, 200, 200, 0.16), rgba(16, 16, 16, 0.9));
+  --rank-card-third: linear-gradient(135deg, rgba(190, 110, 50, 0.18), rgba(16, 16, 16, 0.9));
+  --rank-pos-bg: rgba(255, 255, 255, 0.08);
+  --rank-points-color: #ffcc33;
+
+  --how-card-bg: linear-gradient(145deg, rgba(35, 15, 17, 0.96), rgba(12, 12, 14, 0.98));
+  --how-card-border: rgba(255, 70, 70, 0.18);
+}
+
+/* ==========================================================================
+   ⚙️ CONFIGURAÇÕES BASE & ANIMAÇÕES
+   ========================================================================== */
+
 * {
   box-sizing: border-box;
 }
@@ -9,14 +86,11 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  color: #ffffff;
+  color: var(--text-main);
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(229, 9, 20, 0.36), transparent 28%),
-    radial-gradient(circle at 88% 18%, rgba(127, 29, 29, 0.32), transparent 30%),
-    radial-gradient(circle at 50% 100%, rgba(239, 68, 68, 0.12), transparent 38%),
-    linear-gradient(135deg, #060606 0%, #170303 42%, #030303 100%);
+  background: var(--bg-body-gradient);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 body::before {
@@ -26,8 +100,8 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), transparent 82%);
 }
@@ -43,9 +117,20 @@ img {
   -webkit-user-select: none;
 }
 
-/* ===============================
-   BASE LAYOUT
-================================ */
+@keyframes pulse-skeleton {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.skeleton {
+  animation: pulse-skeleton 1.5s ease-in-out infinite;
+  background-color: var(--bg-input);
+}
+
+/* ==========================================================================
+   📱 BASE LAYOUT
+   ========================================================================== */
 
 .site-shell,
 .page {
@@ -56,9 +141,9 @@ img {
   padding: 42px 18px 28px;
 }
 
-/* ===============================
-   HERO
-================================ */
+/* ==========================================================================
+   🔥 HERO SECTION
+   ========================================================================== */
 
 .hero-section {
   position: relative;
@@ -109,12 +194,12 @@ img {
   gap: 8px;
   padding: 9px 16px;
   border-radius: 999px;
-  color: #fecaca;
-  background: rgba(127, 29, 29, 0.62);
-  border: 1px solid rgba(248, 113, 113, 0.32);
+  color: var(--brand-pill-text);
+  background: var(--brand-pill-bg);
+  border: 1px solid var(--brand-pill-border);
   font-size: 14px;
   font-weight: 900;
-  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.15);
 }
 
 .live-pill-home {
@@ -123,9 +208,9 @@ img {
   justify-content: center;
   padding: 9px 14px;
   border-radius: 999px;
-  color: #fecaca;
-  background: rgba(127, 29, 29, 0.48);
-  border: 1px solid rgba(248, 113, 113, 0.28);
+  color: var(--brand-pill-text);
+  background: var(--brand-pill-bg);
+  border: 1px solid var(--brand-pill-border);
   font-size: 13px;
   font-weight: 900;
 }
@@ -136,13 +221,13 @@ img {
   font-size: clamp(44px, 8vw, 76px);
   line-height: 0.92;
   letter-spacing: -0.075em;
-  text-shadow: 4px 4px 0 rgba(59, 130, 246, 0.32);
+  color: var(--text-main);
 }
 
 .hero-content p {
   max-width: 700px;
   margin: 18px 0 0;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--text-muted);
   font-size: 18px;
   line-height: 1.55;
 }
@@ -177,55 +262,43 @@ img {
 
 .hero-button.primary,
 .primary-btn {
-  color: #120404;
-  background: #ffffff;
-  box-shadow: 0 16px 38px rgba(255, 255, 255, 0.1);
+  color: var(--bg-card);
+  background: var(--text-main);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.05);
 }
 
 .hero-button.secondary,
 .secondary-btn {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  color: var(--text-main);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
 }
 
 .hero-button.channel {
   color: #ffffff;
-  background: rgba(220, 38, 38, 0.38);
-  border: 1px solid rgba(248, 113, 113, 0.34);
+  background: #cc1414;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 14px rgba(204, 20, 20, 0.2);
 }
 
 .hero-button.channel:hover {
-  background: rgba(220, 38, 38, 0.58);
+  background: #ad0f0f;
 }
 
-/* ===============================
-   COMO FUNCIONA
-================================ */
+/* ==========================================================================
+   📋 SEÇÃO COMO FUNCIONA / INSTRUÇÕES
+   ========================================================================== */
 
 .how-section {
   position: relative;
   margin: 8px 0 34px;
   padding: 24px;
   border-radius: 32px;
-  background:
-    radial-gradient(circle at top left, rgba(239, 68, 68, 0.16), transparent 34%),
-    linear-gradient(180deg, rgba(24, 24, 27, 0.92), rgba(8, 8, 10, 0.96));
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.36);
+  background: var(--bg-card-gradient);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
-}
-
-.how-section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 36px 36px;
-  opacity: 0.4;
-  pointer-events: none;
 }
 
 .how-header {
@@ -238,7 +311,7 @@ img {
 .section-kicker {
   display: inline-flex;
   margin-bottom: 8px;
-  color: #fca5a5;
+  color: #cc1414;
   font-size: 14px;
   font-weight: 900;
 }
@@ -248,11 +321,12 @@ img {
   font-size: clamp(28px, 5vw, 44px);
   line-height: 1;
   letter-spacing: -0.055em;
+  color: var(--text-main);
 }
 
 .how-header p {
   margin: 12px 0 0;
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--text-muted);
   font-size: 16px;
   line-height: 1.55;
 }
@@ -265,36 +339,45 @@ img {
   gap: 12px;
 }
 
-.how-card {
+.how-card,
+.step-card,
+.info-card,
+.explanation-card,
+.feature-card,
+.workflow-card,
+.guide-card {
   position: relative;
+  overflow: hidden;
   min-height: 214px;
   padding: 18px;
   border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
-  border: 1px solid rgba(255, 255, 255, 0.095);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.26);
-  overflow: hidden;
+  background: var(--how-card-bg) !important;
+  border: 1px solid var(--how-card-border) !important;
+  box-shadow: var(--shadow-card) !important;
+  transition: all 0.3s ease;
 }
 
-.how-card::after {
+.how-card::before,
+.step-card::before,
+.info-card::before,
+.explanation-card::before,
+.feature-card::before,
+.workflow-card::before,
+.guide-card::before {
   content: "";
   position: absolute;
-  right: -28px;
-  bottom: -28px;
-  width: 84px;
-  height: 84px;
-  border-radius: 999px;
-  background: rgba(229, 9, 20, 0.18);
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at top left, rgba(255, 45, 45, 0.08), transparent 42%);
 }
 
 .how-number {
   display: inline-flex;
   padding: 6px 9px;
   border-radius: 999px;
-  color: #fecaca;
-  background: rgba(127, 29, 29, 0.5);
-  border: 1px solid rgba(248, 113, 113, 0.25);
+  color: var(--brand-pill-text);
+  background: var(--brand-pill-bg);
+  border: 1px solid var(--brand-pill-border);
   font-size: 12px;
   font-weight: 950;
 }
@@ -308,18 +391,19 @@ img {
   margin: 12px 0 0;
   font-size: 17px;
   line-height: 1.15;
+  color: var(--text-main);
 }
 
 .how-card p {
   margin: 9px 0 0;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--text-muted);
   font-size: 14px;
   line-height: 1.45;
 }
 
-/* ===============================
-   RANKING HEADING
-================================ */
+/* ==========================================================================
+   📊 TITULOS DO RANKING WIDGET
+   ========================================================================== */
 
 .ranking-wrapper {
   position: relative;
@@ -338,12 +422,13 @@ img {
   font-size: clamp(30px, 5vw, 46px);
   line-height: 1;
   letter-spacing: -0.05em;
+  color: var(--text-main);
 }
 
 .ranking-heading p {
   max-width: 560px;
   margin: 8px 0 0;
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--text-muted);
   font-size: 15px;
   line-height: 1.45;
 }
@@ -352,9 +437,9 @@ img {
   flex-shrink: 0;
   padding: 11px 14px;
   border-radius: 999px;
-  color: #fecaca;
-  background: rgba(127, 29, 29, 0.4);
-  border: 1px solid rgba(248, 113, 113, 0.24);
+  color: var(--brand-pill-text);
+  background: var(--brand-pill-bg);
+  border: 1px solid var(--brand-pill-border);
   text-decoration: none;
   font-size: 14px;
   font-weight: 900;
@@ -363,54 +448,13 @@ img {
 
 .ranking-heading-link:hover {
   transform: translateY(-2px);
-  background: rgba(127, 29, 29, 0.62);
+  background: #cc1414;
+  color: #ffffff;
 }
 
-/* ===============================
-   COMPATIBILIDADE COM HERO ANTIGO
-================================ */
-
-.hero {
-  position: relative;
-  overflow: hidden;
-  border-radius: 30px;
-  padding: 34px 24px;
-  background:
-    linear-gradient(135deg, rgba(229, 9, 20, 0.95), rgba(20, 20, 20, 0.98) 62%),
-    #111111;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.45);
-}
-
-.hero::after {
-  content: "";
-  position: absolute;
-  right: -80px;
-  top: -80px;
-  width: 210px;
-  height: 210px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.hero h1 {
-  margin: 0;
-  font-size: clamp(36px, 8vw, 64px);
-  line-height: 0.95;
-  letter-spacing: -2px;
-}
-
-.hero p {
-  max-width: 560px;
-  margin: 18px 0 0;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 17px;
-  line-height: 1.55;
-}
-
-/* ===============================
-   STATS
-================================ */
+/* ==========================================================================
+   🎯 ESTRUTURA DOS CARDS DO MEU RANKING LIST
+   ========================================================================== */
 
 .stats-grid {
   display: grid;
@@ -423,11 +467,9 @@ img {
   min-width: 0;
   padding: 18px;
   border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(31, 31, 36, 0.98), rgba(15, 15, 18, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.34);
+  background: var(--bg-card-gradient);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
 }
 
 .stat-card span {
@@ -439,27 +481,23 @@ img {
   margin-top: 10px;
   font-size: 28px;
   line-height: 1.1;
+  color: var(--text-main);
 }
 
 .stat-card p {
   margin: 6px 0 0;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--text-muted);
   font-size: 14px;
 }
-
-/* ===============================
-   SECTIONS
-================================ */
 
 .ranking-section,
 .history-section {
   margin-top: 22px;
   padding: 20px;
   border-radius: 30px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.035));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.3);
+  background: var(--bg-card-gradient);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
 }
 
 .section-header {
@@ -474,27 +512,24 @@ img {
   margin: 0;
   font-size: 26px;
   letter-spacing: -0.04em;
+  color: var(--text-main);
 }
 
 .section-header p {
   margin: 5px 0 0;
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--text-muted);
 }
 
 .live-pill {
   white-space: nowrap;
   padding: 8px 12px;
   border-radius: 999px;
-  color: #fecaca;
-  background: rgba(127, 29, 29, 0.48);
-  border: 1px solid rgba(248, 113, 113, 0.28);
+  color: var(--brand-pill-text);
+  background: var(--brand-pill-bg);
+  border: 1px solid var(--brand-pill-border);
   font-size: 13px;
   font-weight: 900;
 }
-
-/* ===============================
-   RANKING LIST
-================================ */
 
 .ranking-list,
 .history-list {
@@ -509,25 +544,22 @@ img {
   align-items: center;
   padding: 16px;
   border-radius: 22px;
-  background: rgba(16, 16, 16, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: 0.2s ease;
+  background: var(--rank-card-bg);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
 }
 
 .rank-card.first {
-  background:
-    linear-gradient(135deg, rgba(255, 204, 51, 0.22), rgba(16, 16, 16, 0.9));
-  border-color: rgba(255, 204, 51, 0.35);
+  background: var(--rank-card-first);
+  border-color: rgba(255, 204, 51, 0.4);
 }
 
 .rank-card.second {
-  background:
-    linear-gradient(135deg, rgba(200, 200, 200, 0.16), rgba(16, 16, 16, 0.9));
+  background: var(--rank-card-second);
 }
 
 .rank-card.third {
-  background:
-    linear-gradient(135deg, rgba(190, 110, 50, 0.18), rgba(16, 16, 16, 0.9));
+  background: var(--rank-card-third);
 }
 
 .rank-left {
@@ -544,7 +576,8 @@ img {
   display: grid;
   place-items: center;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--rank-pos-bg);
+  transition: background 0.3s ease;
 }
 
 .rank-position span {
@@ -554,7 +587,7 @@ img {
 
 .rank-position strong {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-muted);
 }
 
 .rank-card h3 {
@@ -563,11 +596,12 @@ img {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--text-main);
 }
 
 .rank-card p {
   margin: 4px 0 0;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--text-muted);
   font-size: 14px;
 }
 
@@ -579,39 +613,36 @@ img {
 .rank-points strong {
   display: block;
   font-size: 26px;
-  color: #ffcc33;
+  color: var(--rank-points-color);
 }
 
 .rank-points span {
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--text-muted);
   font-size: 13px;
   font-weight: 700;
 }
-
-/* ===============================
-   EMPTY
-================================ */
 
 .empty-card {
   padding: 24px;
   text-align: center;
   border-radius: 22px;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px dashed rgba(255, 255, 255, 0.16);
+  background: transparent;
+  border: 1px dashed var(--border-color);
 }
 
 .empty-card h3 {
   margin: 0 0 8px;
+  color: var(--text-main);
 }
 
 .empty-card p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
 }
 
-/* ===============================
-   PROFILE
-================================ */
+/* ==========================================================================
+   👤 PROFILE CARD DUAL-THEME MAPS
+   ========================================================================== */
 
 .profile-card {
   position: relative;
@@ -619,24 +650,9 @@ img {
   margin-top: 12px;
   padding: 28px;
   border-radius: 32px;
-  background:
-    radial-gradient(circle at 18% 20%, rgba(239, 68, 68, 0.28), transparent 34%),
-    linear-gradient(135deg, rgba(24, 24, 27, 0.98), rgba(5, 5, 6, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
-}
-
-.profile-card::after {
-  content: "";
-  position: absolute;
-  right: -70px;
-  top: -80px;
-  width: 220px;
-  height: 220px;
-  border-radius: 999px;
-  background: rgba(229, 9, 20, 0.16);
-  filter: blur(12px);
-  pointer-events: none;
+  background: var(--bg-card-gradient);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
 }
 
 .profile-main {
@@ -654,8 +670,8 @@ img {
   display: grid;
   place-items: center;
   border-radius: 28px;
-  background: #ffffff;
-  color: #111111;
+  background: var(--text-main);
+  color: var(--bg-card);
   font-size: 38px;
   font-weight: 900;
 }
@@ -667,20 +683,18 @@ img {
   display: block;
   border-radius: 999px;
   object-fit: cover;
-  background: #18181b;
-  border: 3px solid rgba(248, 113, 113, 0.38);
-  box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.38),
-    0 0 0 8px rgba(229, 9, 20, 0.12);
+  background: var(--bg-input);
+  border: 3px solid #cc1414;
+  box-shadow: 0 12px 30px rgba(204, 20, 20, 0.15);
 }
 
 .profile-tag {
   display: inline-flex;
   padding: 8px 13px;
   border-radius: 999px;
-  color: #fecaca;
-  background: rgba(127, 29, 29, 0.55);
-  border: 1px solid rgba(248, 113, 113, 0.28);
+  color: var(--brand-pill-text);
+  background: var(--brand-pill-bg);
+  border: 1px solid var(--brand-pill-border);
   font-weight: 900;
   font-size: 13px;
 }
@@ -690,13 +704,13 @@ img {
   font-size: clamp(34px, 7vw, 56px);
   line-height: 0.95;
   letter-spacing: -0.065em;
-  text-shadow: 3px 3px 0 rgba(59, 130, 246, 0.25);
+  color: var(--text-main);
 }
 
 .profile-subtitle {
   max-width: 520px;
   margin: 0;
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--text-muted);
   font-size: 16px;
   line-height: 1.45;
 }
@@ -714,24 +728,22 @@ img {
   min-height: 118px;
   padding: 18px;
   border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(31, 31, 36, 0.98), rgba(15, 15, 18, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.28);
+  background: var(--bg-card-gradient);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
 }
 
 .profile-stat strong {
   display: block;
   font-size: 34px;
   line-height: 1;
-  color: #ffffff;
-  text-shadow: 3px 3px 0 rgba(59, 130, 246, 0.25);
+  color: var(--text-main);
 }
 
 .profile-stat span {
   display: block;
   margin-top: 7px;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--text-muted);
   font-size: 14px;
   font-weight: 800;
 }
@@ -742,36 +754,16 @@ img {
   margin-bottom: 16px;
   padding: 10px 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.82);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
   font-weight: 900;
   transition: 0.2s ease;
 }
 
 .back-link:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--bg-input);
   transform: translateX(-2px);
-}
-
-/* ===============================
-   HISTORY
-================================ */
-
-.history-section {
-  margin-top: 22px;
-  padding: 24px;
-  border-radius: 32px;
-  background:
-    radial-gradient(circle at top left, rgba(239, 68, 68, 0.12), transparent 34%),
-    linear-gradient(180deg, rgba(15, 15, 18, 0.96), rgba(5, 5, 6, 0.96));
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
-}
-
-.history-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 18px;
 }
 
 .history-item {
@@ -780,8 +772,8 @@ img {
   gap: 14px;
   padding: 16px;
   border-radius: 22px;
-  background: rgba(24, 24, 27, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
 }
 
 .history-item-number {
@@ -791,10 +783,10 @@ img {
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: linear-gradient(135deg, #ef4444, #7f1d1d);
+  background: linear-gradient(135deg, #cc1414, #7f1d1d);
   color: #ffffff;
   font-weight: 950;
-  box-shadow: 0 12px 28px rgba(239, 68, 68, 0.24);
+  box-shadow: 0 6px 18px rgba(204, 20, 20, 0.2);
 }
 
 .history-item-content {
@@ -804,17 +796,19 @@ img {
 .history-item strong {
   display: block;
   font-size: 16px;
+  color: var(--text-main);
 }
 
 .history-item span {
   display: block;
   margin-top: 6px;
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--text-muted);
   font-size: 14px;
 }
-/* ===============================
-   FOOTER
-================================ */
+
+/* ==========================================================================
+   👣 SITE FOOTER & LOADING CARDS
+   ========================================================================== */
 
 .site-footer,
 .footer {
@@ -825,18 +819,14 @@ img {
   flex-wrap: wrap;
   margin: 34px 0 8px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.52);
+  color: var(--text-muted);
   font-size: 14px;
   font-weight: 800;
 }
 
 .site-footer strong {
-  color: #fca5a5;
+  color: #cc1414;
 }
-
-/* ===============================
-   LOADING / ERROR
-================================ */
 
 .loading-card,
 .error-card {
@@ -851,24 +841,26 @@ img {
   max-width: 420px;
   padding: 26px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
 }
 
 .loading-card h1,
 .error-card h1 {
   margin: 0 0 10px;
+  color: var(--text-main);
 }
 
 .loading-card p,
 .error-card p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--text-muted);
 }
 
-/* ===============================
-   MOBILE
-================================ */
+/* ==========================================================================
+   📱 MEDIA QUERIES (RESPONSIVIDADE PRESERVADA)
+   ========================================================================== */
 
 @media (max-width: 920px) {
   .how-grid {
@@ -1003,10 +995,8 @@ img {
     align-items: flex-start;
   }
 }
-/* ===============================
-   PROFILE FINAL POLISH
-================================ */
 
+/* PROFILE FINAL POLISH PACK */
 .profile-card {
   min-height: 188px;
   display: flex;
@@ -1076,7 +1066,7 @@ img {
 
 .history-item span {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--text-muted);
 }
 
 @media (max-width: 620px) {
@@ -1098,9 +1088,6 @@ img {
     font-size: 34px;
   }
 }
-/* ===============================
-   PROFILE RANK FEATURED
-================================ */
 
 .profile-main-featured {
   align-items: center;
@@ -1141,9 +1128,6 @@ img {
     width: 100%;
   }
 }
-/* ===============================
-   PROFILE FINAL LAYOUT FIX
-================================ */
 
 .profile-card {
   min-height: 230px;
@@ -1218,9 +1202,6 @@ img {
     font-size: clamp(40px, 13vw, 56px);
   }
 }
-/* ===============================
-   PROFILE BADGE FINAL FIX
-================================ */
 
 .profile-rank-area {
   width: 150px;
@@ -1247,61 +1228,4 @@ img {
     width: auto;
     white-space: normal;
   }
-}
-
-/* ===============================
-   FLAMENGO - CARDS EXPLICATIVOS
-================================ */
-
-.how-card,
-.step-card,
-.info-card,
-.explanation-card,
-.feature-card,
-.workflow-card,
-.guide-card {
-  position: relative;
-  overflow: hidden;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(35, 15, 17, 0.96),
-      rgba(12, 12, 14, 0.98)
-    ) !important;
-  border: 1px solid rgba(255, 70, 70, 0.18);
-  box-shadow:
-    0 20px 45px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-/* remove bolha/detalhe amarelo */
-.how-card::after,
-.step-card::after,
-.info-card::after,
-.explanation-card::after,
-.feature-card::after,
-.workflow-card::after,
-.guide-card::after {
-  content: none !important;
-  display: none !important;
-}
-
-/* mantém só um brilho vermelho bem discreto */
-.how-card::before,
-.step-card::before,
-.info-card::before,
-.explanation-card::before,
-.feature-card::before,
-.workflow-card::before,
-.guide-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(255, 45, 45, 0.12),
-      transparent 42%
-    );
 }
