@@ -20,9 +20,9 @@ export default function AdminPainel() {
   
   // 🏟️ ESTADOS DO CONFRONTO PRINCIPAL
   const [timeCasa, setTimeCasa] = useState("FLAMENGO")
-  const [logoCasaUrl, setLogoCasaUrl] = useState("https://s.sde.globo.com/media/organizations/2018/04/10/flamengo_60x60.png")
+  const [logoCasaUrl, setLogoCasaUrl] = useState("")
   const [timeFora, setTimeFora] = useState("PALMEIRAS")
-  const [logoForaUrl, setLogoForaUrl] = useState("https://s.sde.globo.com/media/organizations/2014/04/14/palmeiras_60x60.png")
+  const [logoForaUrl, setLogoForaUrl] = useState("")
   
   const [dataJogo, setDataJogo] = useState("") 
   const [campeonato, setCampeonato] = useState("")
