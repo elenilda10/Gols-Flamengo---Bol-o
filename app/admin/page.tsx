@@ -121,7 +121,7 @@ export default function AdminPainel() {
   // Limpa o formulário de confrontos futuros de volta ao padrão
   const limparFormAgenda = () => {
     setFTimeCasa("FLAMENGO")
-    setFLogoCasaUrl("https://s.sde.globo.com/media/organizations/2018/04/10/flamengo_60x60.png")
+    setFLogoCasaUrl("")
     setFTimeFora("")
     setFLogoForaUrl("")
     setFData("")
