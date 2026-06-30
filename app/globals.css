@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ==========================================================================
-   🧱 MAPEAMENTO DE VARIÁVEIS DINÂMICAS (DUAL-THEME)
+   🧱 1. VARIÁVEIS DE CORES DINÂMICAS (SISTEMA DUAL-THEME)
    ========================================================================== */
 
 /* ☀️ TEMA CLARO PREMIUM (PADRÃO) */
@@ -12,18 +12,18 @@
   --bg-body-gradient: radial-gradient(circle at 12% 8%, rgba(229, 9, 20, 0.04), transparent 28%),
                       radial-gradient(circle at 88% 18%, rgba(127, 29, 29, 0.03), transparent 30%),
                       linear-gradient(135deg, #f4f6f9 0%, #eef1f6 100%);
-  --grid-color: rgba(0, 0, 0, 0.02);
+  --grid-color: rgba(0, 0, 0, 0.015);
   
   --bg-card: #ffffff;
-  --bg-card-gradient: linear-gradient(180deg, #ffffff 0%, #fcfdfe 100%);
+  --bg-card-gradient: linear-gradient(180deg, #ffffff 0%, #f9fafc 100%);
   --bg-input: #edf0f5;
-  --border-color: rgba(0, 0, 0, 0.07);
+  --border-color: rgba(0, 0, 0, 0.08);
   --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.03);
 
   --text-main: #1c1e21;
   --text-muted: #606770;
 
-  --brand-pill-bg: rgba(204, 20, 20, 0.07);
+  --brand-pill-bg: rgba(204, 20, 20, 0.06);
   --brand-pill-text: #cc1414;
   --brand-pill-border: rgba(204, 20, 20, 0.15);
 
@@ -72,7 +72,7 @@ body.dark {
 }
 
 /* ==========================================================================
-   ⚙️ CONFIGURAÇÕES BASE & ANIMAÇÕES
+   ⚙️ 2. CONFIGURAÇÕES BASE & RESET DE LAYOUT
    ========================================================================== */
 
 * {
@@ -87,7 +87,7 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--text-main);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Poppins', Arial, Helvetica, sans-serif; /* 🚀 FONTE ATIVADA DO LAYOUT */
   overflow-x: hidden;
   background: var(--bg-body-gradient);
   transition: background 0.3s ease, color 0.3s ease;
@@ -117,6 +117,7 @@ img {
   -webkit-user-select: none;
 }
 
+/* 💀 LOADING FANTASMA (SKELETON ANIMATION) */
 @keyframes pulse-skeleton {
   0% { opacity: 0.6; }
   50% { opacity: 1; }
@@ -129,7 +130,7 @@ img {
 }
 
 /* ==========================================================================
-   📱 BASE LAYOUT
+   📱 3. SHELL & ESTRUTURA GLOBAL DO APP
    ========================================================================== */
 
 .site-shell,
@@ -142,7 +143,7 @@ img {
 }
 
 /* ==========================================================================
-   🔥 HERO SECTION
+   🔥 4. HERO SECTION COMPONENTS
    ========================================================================== */
 
 .hero-section {
@@ -162,21 +163,10 @@ img {
   pointer-events: none;
 }
 
-.hero-glow-left {
-  top: -120px;
-  left: -80px;
-}
+.hero-glow-left { top: -120px; left: -80px; }
+.hero-glow-right { top: 40px; right: -140px; background: rgba(239, 68, 68, 0.16); }
 
-.hero-glow-right {
-  top: 40px;
-  right: -140px;
-  background: rgba(239, 68, 68, 0.16);
-}
-
-.hero-content {
-  position: relative;
-  z-index: 1;
-}
+.hero-content { position: relative; z-index: 1; }
 
 .hero-topline {
   display: flex;
@@ -199,7 +189,7 @@ img {
   border: 1px solid var(--brand-pill-border);
   font-size: 14px;
   font-weight: 900;
-  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.1);
 }
 
 .live-pill-home {
@@ -282,12 +272,10 @@ img {
   box-shadow: 0 4px 14px rgba(204, 20, 20, 0.2);
 }
 
-.hero-button.channel:hover {
-  background: #ad0f0f;
-}
+.hero-button.channel:hover { background: #ad0f0f; }
 
 /* ==========================================================================
-   📋 SEÇÃO COMO FUNCIONA / INSTRUÇÕES
+   📋 5. SEÇÃO COMO FUNCIONA / CARDS EXPLICATIVOS DUAL-THEME
    ========================================================================== */
 
 .how-section {
@@ -339,6 +327,7 @@ img {
   gap: 12px;
 }
 
+/* 🎨 BLINDA E UNIFICA TODOS OS FORMATOS DE CARDS POSSÍVEIS */
 .how-card,
 .step-card,
 .info-card,
@@ -357,13 +346,13 @@ img {
   transition: all 0.3s ease;
 }
 
-.how-card::before,
-.step-card::before,
-.info-card::before,
-.explanation-card::before,
-.feature-card::before,
-.workflow-card::before,
-.guide-card::before {
+/* Remove detalhes amarelados antigos */
+.how-card::after, .step-card::after, .info-card::after, .explanation-card::after, .feature-card::after, .workflow-card::after, .guide-card::after {
+  content: none !important;
+  display: none !important;
+}
+
+.how-card::before, .step-card::before, .info-card::before, .explanation-card::before, .feature-card::before, .workflow-card::before, .guide-card::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -382,32 +371,16 @@ img {
   font-weight: 950;
 }
 
-.how-icon {
-  margin-top: 18px;
-  font-size: 28px;
-}
+.how-icon { margin-top: 18px; font-size: 28px; }
 
-.how-card h3 {
-  margin: 12px 0 0;
-  font-size: 17px;
-  line-height: 1.15;
-  color: var(--text-main);
-}
-
-.how-card p {
-  margin: 9px 0 0;
-  color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1.45;
-}
+.how-card h3 { margin: 12px 0 0; font-size: 17px; line-height: 1.15; color: var(--text-main); }
+.how-card p { margin: 9px 0 0; color: var(--text-muted); font-size: 14px; line-height: 1.45; }
 
 /* ==========================================================================
-   📊 TITULOS DO RANKING WIDGET
+   📊 6. RANKING HEADING & STATS GRID
    ========================================================================== */
 
-.ranking-wrapper {
-  position: relative;
-}
+.ranking-wrapper { position: relative; }
 
 .ranking-heading {
   display: flex;
@@ -417,21 +390,8 @@ img {
   margin-bottom: 18px;
 }
 
-.ranking-heading h2 {
-  margin: 0;
-  font-size: clamp(30px, 5vw, 46px);
-  line-height: 1;
-  letter-spacing: -0.05em;
-  color: var(--text-main);
-}
-
-.ranking-heading p {
-  max-width: 560px;
-  margin: 8px 0 0;
-  color: var(--text-muted);
-  font-size: 15px;
-  line-height: 1.45;
-}
+.ranking-heading h2 { margin: 0; font-size: clamp(30px, 5vw, 46px); line-height: 1; letter-spacing: -0.05em; color: var(--text-main); }
+.ranking-heading p { max-width: 560px; margin: 8px 0 0; color: var(--text-muted); font-size: 15px; line-height: 1.45; }
 
 .ranking-heading-link {
   flex-shrink: 0;
@@ -446,22 +406,9 @@ img {
   transition: 0.2s ease;
 }
 
-.ranking-heading-link:hover {
-  transform: translateY(-2px);
-  background: #cc1414;
-  color: #ffffff;
-}
+.ranking-heading-link:hover { transform: translateY(-2px); background: #cc1414; color: #ffffff; }
 
-/* ==========================================================================
-   🎯 ESTRUTURA DOS CARDS DO MEU RANKING LIST
-   ========================================================================== */
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin: 18px 0;
-}
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 18px 0; }
 
 .stat-card {
   min-width: 0;
@@ -472,23 +419,13 @@ img {
   box-shadow: var(--shadow-card);
 }
 
-.stat-card span {
-  font-size: 26px;
-}
+.stat-card span { font-size: 26px; }
+.stat-card strong { display: block; margin-top: 10px; font-size: 28px; line-height: 1.1; color: var(--text-main); }
+.stat-card p { margin: 6px 0 0; color: var(--text-muted); font-size: 14px; }
 
-.stat-card strong {
-  display: block;
-  margin-top: 10px;
-  font-size: 28px;
-  line-height: 1.1;
-  color: var(--text-main);
-}
-
-.stat-card p {
-  margin: 6px 0 0;
-  color: var(--text-muted);
-  font-size: 14px;
-}
+/* ==========================================================================
+   🏆 7. SECTIONS & TABELA DE CLASSIFICAÇÃO (RANK-CARDS)
+   ========================================================================== */
 
 .ranking-section,
 .history-section {
@@ -500,25 +437,9 @@ img {
   box-shadow: var(--shadow-card);
 }
 
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.section-header h2 {
-  margin: 0;
-  font-size: 26px;
-  letter-spacing: -0.04em;
-  color: var(--text-main);
-}
-
-.section-header p {
-  margin: 5px 0 0;
-  color: var(--text-muted);
-}
+.section-header { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 16px; }
+.section-header h2 { margin: 0; font-size: 26px; letter-spacing: -0.04em; color: var(--text-main); }
+.section-header p { margin: 5px 0 0; color: var(--text-muted); }
 
 .live-pill {
   white-space: nowrap;
@@ -531,11 +452,7 @@ img {
   font-weight: 900;
 }
 
-.ranking-list,
-.history-list {
-  display: grid;
-  gap: 12px;
-}
+.ranking-list, .history-list { display: grid; gap: 12px; }
 
 .rank-card {
   display: flex;
@@ -549,25 +466,11 @@ img {
   transition: all 0.3s ease;
 }
 
-.rank-card.first {
-  background: var(--rank-card-first);
-  border-color: rgba(255, 204, 51, 0.4);
-}
+.rank-card.first { background: var(--rank-card-first); border-color: rgba(255, 204, 51, 0.4); }
+.rank-card.second { background: var(--rank-card-second); }
+.rank-card.third { background: var(--rank-card-third); }
 
-.rank-card.second {
-  background: var(--rank-card-second);
-}
-
-.rank-card.third {
-  background: var(--rank-card-third);
-}
-
-.rank-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-width: 0;
-}
+.rank-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
 
 .rank-position {
   width: 52px;
@@ -580,68 +483,22 @@ img {
   transition: background 0.3s ease;
 }
 
-.rank-position span {
-  font-size: 20px;
-  line-height: 1;
-}
+.rank-position span { font-size: 20px; line-height: 1; }
+.rank-position strong { font-size: 13px; color: var(--text-muted); }
 
-.rank-position strong {
-  font-size: 13px;
-  color: var(--text-muted);
-}
+.rank-card h3 { margin: 0; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
+.rank-card p { margin: 4px 0 0; color: var(--text-muted); font-size: 14px; }
 
-.rank-card h3 {
-  margin: 0;
-  font-size: 18px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--text-main);
-}
+.rank-points { text-align: right; flex: 0 0 auto; }
+.rank-points strong { display: block; font-size: 26px; color: var(--rank-points-color); }
+.rank-points span { color: var(--text-muted); font-size: 13px; font-weight: 700; }
 
-.rank-card p {
-  margin: 4px 0 0;
-  color: var(--text-muted);
-  font-size: 14px;
-}
-
-.rank-points {
-  text-align: right;
-  flex: 0 0 auto;
-}
-
-.rank-points strong {
-  display: block;
-  font-size: 26px;
-  color: var(--rank-points-color);
-}
-
-.rank-points span {
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.empty-card {
-  padding: 24px;
-  text-align: center;
-  border-radius: 22px;
-  background: transparent;
-  border: 1px dashed var(--border-color);
-}
-
-.empty-card h3 {
-  margin: 0 0 8px;
-  color: var(--text-main);
-}
-
-.empty-card p {
-  margin: 0;
-  color: var(--text-muted);
-}
+.empty-card { padding: 24px; text-align: center; border-radius: 22px; background: transparent; border: 1px dashed var(--border-color); }
+.empty-card h3 { margin: 0 0 8px; color: var(--text-main); }
+.empty-card p { margin: 0; color: var(--text-muted); }
 
 /* ==========================================================================
-   👤 PROFILE CARD DUAL-THEME MAPS
+   👤 8. PROFILE CARD COMPONENTS
    ========================================================================== */
 
 .profile-card {
@@ -655,13 +512,7 @@ img {
   box-shadow: var(--shadow-card);
 }
 
-.profile-main {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
+.profile-main { position: relative; z-index: 1; display: flex; align-items: center; gap: 22px; }
 
 .profile-avatar {
   width: 86px;
@@ -699,28 +550,10 @@ img {
   font-size: 13px;
 }
 
-.profile-card h1 {
-  margin: 12px 0 6px;
-  font-size: clamp(34px, 7vw, 56px);
-  line-height: 0.95;
-  letter-spacing: -0.065em;
-  color: var(--text-main);
-}
+.profile-card h1 { margin: 12px 0 6px; font-size: clamp(34px, 7vw, 56px); line-height: 0.95; letter-spacing: -0.065em; color: var(--text-main); }
+.profile-subtitle { max-width: 520px; margin: 0; color: var(--text-muted); font-size: 16px; line-height: 1.45; }
 
-.profile-subtitle {
-  max-width: 520px;
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 16px;
-  line-height: 1.45;
-}
-
-.profile-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 20px;
-}
+.profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px; }
 
 .profile-stat {
   position: relative;
@@ -733,20 +566,8 @@ img {
   box-shadow: var(--shadow-card);
 }
 
-.profile-stat strong {
-  display: block;
-  font-size: 34px;
-  line-height: 1;
-  color: var(--text-main);
-}
-
-.profile-stat span {
-  display: block;
-  margin-top: 7px;
-  color: var(--text-muted);
-  font-size: 14px;
-  font-weight: 800;
-}
+.profile-stat strong { display: block; font-size: 34px; line-height: 1; color: var(--text-main); }
+.profile-stat span { display: block; margin-top: 7px; color: var(--text-muted); font-size: 14px; font-weight: 800; }
 
 .back-link {
   display: inline-flex;
@@ -760,11 +581,11 @@ img {
   font-weight: 900;
   transition: 0.2s ease;
 }
+.back-link:hover { background: var(--bg-input); transform: translateX(-2px); }
 
-.back-link:hover {
-  background: var(--bg-input);
-  transform: translateX(-2px);
-}
+/* ==========================================================================
+   🕒 9. HISTÓRICO DE PALPITES (HISTORY ITEMS)
+   ========================================================================== */
 
 .history-item {
   display: flex;
@@ -789,25 +610,12 @@ img {
   box-shadow: 0 6px 18px rgba(204, 20, 20, 0.2);
 }
 
-.history-item-content {
-  min-width: 0;
-}
-
-.history-item strong {
-  display: block;
-  font-size: 16px;
-  color: var(--text-main);
-}
-
-.history-item span {
-  display: block;
-  margin-top: 6px;
-  color: var(--text-muted);
-  font-size: 14px;
-}
+.history-item-content { min-width: 0; }
+.history-item strong { display: block; font-size: 16px; color: var(--text-main); }
+.history-item span { display: block; margin-top: 6px; color: var(--text-muted); font-size: 14px; }
 
 /* ==========================================================================
-   👣 SITE FOOTER & LOADING CARDS
+   👣 10. FOOTER & LOADING CARDS STRUCTS
    ========================================================================== */
 
 .site-footer,
@@ -823,21 +631,10 @@ img {
   font-size: 14px;
   font-weight: 800;
 }
+.site-footer strong { color: #cc1414; }
 
-.site-footer strong {
-  color: #cc1414;
-}
-
-.loading-card,
-.error-card {
-  min-height: 70vh;
-  display: grid;
-  place-items: center;
-  text-align: center;
-}
-
-.loading-card div,
-.error-card div {
+.loading-card, .error-card { min-height: 70vh; display: grid; place-items: center; text-align: center; }
+.loading-card div, .error-card div {
   max-width: 420px;
   padding: 26px;
   border-radius: 24px;
@@ -845,387 +642,111 @@ img {
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-card);
 }
-
-.loading-card h1,
-.error-card h1 {
-  margin: 0 0 10px;
-  color: var(--text-main);
-}
-
-.loading-card p,
-.error-card p {
-  margin: 0;
-  color: var(--text-muted);
-}
+.loading-card h1, .error-card h1 { margin: 0 0 10px; color: var(--text-main); }
+.loading-card p, .error-card p { margin: 0; color: var(--text-muted); }
 
 /* ==========================================================================
-   📱 MEDIA QUERIES (RESPONSIVIDADE PRESERVADA)
+   📱 11. MEDIA QUERIES (RESPONSIVIDADE INTEGRAL PRESERVADA)
    ========================================================================== */
 
 @media (max-width: 920px) {
-  .how-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  .how-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 760px) {
-  .site-shell,
-  .page {
-    padding: 28px 12px 22px;
-  }
-
-  .hero-section {
-    margin-bottom: 22px;
-    padding-top: 14px;
-  }
-
-  .hero-content h1 {
-    font-size: clamp(40px, 13vw, 58px);
-  }
-
-  .hero-content p {
-    font-size: 16px;
-  }
-
-  .hero-actions {
-    flex-direction: column;
-  }
-
-  .hero-button,
-  .primary-btn,
-  .secondary-btn {
-    width: 100%;
-  }
-
-  .how-section {
-    padding: 18px;
-    border-radius: 26px;
-  }
-
-  .how-grid,
-  .stats-grid,
-  .profile-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .how-card {
-    min-height: auto;
-  }
-
-  .ranking-heading {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .ranking-heading-link {
-    width: 100%;
-    text-align: center;
-  }
-
-  .section-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .rank-card {
-    align-items: flex-start;
-  }
-
-  .rank-position {
-    width: 46px;
-    height: 46px;
-    flex-basis: 46px;
-  }
-
-  .rank-card h3 {
-    font-size: 16px;
-  }
-
-  .rank-points strong {
-    font-size: 22px;
-  }
-
-  .profile-card {
-    padding: 26px 18px;
-  }
+  .site-shell, .page { padding: 28px 12px 22px; }
+  .hero-section { margin-bottom: 22px; padding-top: 14px; }
+  .hero-content h1 { font-size: clamp(40px, 13vw, 58px); }
+  .hero-content p { font-size: 16px; }
+  .hero-actions { flex-direction: column; }
+  .hero-button, .primary-btn, .secondary-btn { width: 100%; }
+  .how-section { padding: 18px; border-radius: 26px; }
+  .how-grid, .stats-grid, .profile-stats { grid-template-columns: 1fr; }
+  .how-card { min-height: auto; }
+  .ranking-heading { align-items: flex-start; flex-direction: column; }
+  .ranking-heading-link { width: 100%; text-align: center; }
+  .section-header { align-items: flex-start; flex-direction: column; }
+  .rank-card { align-items: flex-start; }
+  .rank-position { width: 46px; height: 46px; flex-basis: 46px; }
+  .rank-card h3 { font-size: 16px; }
+  .rank-points strong { font-size: 22px; }
+  .profile-card { padding: 26px 18px; }
 }
 
 @media (max-width: 420px) {
-  .hero-content h1 {
-    letter-spacing: -0.06em;
-  }
-
-  .rank-card {
-    flex-direction: column;
-  }
-
-  .rank-points {
-    width: 100%;
-    text-align: left;
-    padding-left: 60px;
-  }
-
-  .live-pill,
-  .live-pill-home {
-    white-space: normal;
-  }
+  .hero-content h1 { letter-spacing: -0.06em; }
+  .rank-card { flex-direction: column; }
+  .rank-points { width: 100%; text-align: left; padding-left: 60px; }
+  .live-pill, .live-pill-home { white-space: normal; }
 }
 
 @media (max-width: 620px) {
-  .profile-card {
-    padding: 24px 18px;
-  }
-
-  .profile-main {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .profile-photo {
-    width: 104px;
-    height: 104px;
-    flex-basis: 104px;
-  }
-
-  .profile-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .history-item {
-    align-items: flex-start;
-  }
+  .profile-card { padding: 24px 18px; }
+  .profile-main { flex-direction: column; text-align: center; }
+  .profile-photo { width: 104px; height: 104px; flex-basis: 104px; }
+  .profile-stats { grid-template-columns: 1fr; }
+  .history-item { align-items: flex-start; }
 }
 
-/* PROFILE FINAL POLISH PACK */
-.profile-card {
-  min-height: 188px;
-  display: flex;
-  align-items: center;
-}
+/* PROFILE DESIGN POLISH */
+.profile-card { min-height: 188px; display: flex; align-items: center; }
+.profile-main { width: 100%; }
+.profile-photo { width: 118px; height: 118px; flex-basis: 118px; }
+.profile-card h1 { font-size: clamp(42px, 7vw, 64px); }
+.profile-subtitle { font-size: 17px; }
+.profile-stats { margin-top: 22px; }
+.profile-stat { min-height: 124px; display: flex; flex-direction: column; justify-content: center; }
+.profile-stat > span:first-child { font-size: 28px; margin-bottom: 10px; }
+.profile-stat strong { font-size: 38px; }
+.profile-stat span:last-child { font-size: 15px; }
 
-.profile-main {
-  width: 100%;
-}
-
-.profile-photo {
-  width: 118px;
-  height: 118px;
-  flex-basis: 118px;
-}
-
-.profile-card h1 {
-  font-size: clamp(42px, 7vw, 64px);
-}
-
-.profile-subtitle {
-  font-size: 17px;
-}
-
-.profile-stats {
-  margin-top: 22px;
-}
-
-.profile-stat {
-  min-height: 124px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.profile-stat > span:first-child {
-  font-size: 28px;
-  margin-bottom: 10px;
-}
-
-.profile-stat strong {
-  font-size: 38px;
-}
-
-.profile-stat span:last-child {
-  font-size: 15px;
-}
-
-.history-section {
-  margin-top: 24px;
-}
-
-.history-item {
-  padding: 18px;
-}
-
-.history-item-number {
-  width: 46px;
-  height: 46px;
-  flex-basis: 46px;
-  font-size: 18px;
-}
-
-.history-item strong {
-  font-size: 17px;
-}
-
-.history-item span {
-  font-size: 15px;
-  color: var(--text-muted);
-}
+.history-section { margin-top: 24px; }
+.history-item { padding: 18px; }
+.history-item-number { width: 46px; height: 46px; flex-basis: 46px; font-size: 18px; }
+.history-item strong { font-size: 17px; }
+.history-item span { font-size: 15px; color: var(--text-muted); }
 
 @media (max-width: 620px) {
-  .profile-card {
-    min-height: auto;
-  }
-
-  .profile-photo {
-    width: 108px;
-    height: 108px;
-    flex-basis: 108px;
-  }
-
-  .profile-card h1 {
-    font-size: clamp(38px, 13vw, 54px);
-  }
-
-  .profile-stat strong {
-    font-size: 34px;
-  }
+  .profile-card { min-height: auto; }
+  .profile-photo { width: 108px; height: 108px; flex-basis: 108px; }
+  .profile-card h1 { font-size: clamp(38px, 13vw, 54px); }
+  .profile-stat strong { font-size: 34px; }
 }
 
-.profile-main-featured {
-  align-items: center;
-}
-
-.profile-rank-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  flex: 0 0 auto;
-}
-
-.profile-tag-featured {
-  font-size: 14px;
-  padding: 9px 14px;
-}
-
-.profile-text-area {
-  min-width: 0;
-}
-
-.profile-text-area h1 {
-  margin-top: 0;
-}
+.profile-main-featured { align-items: center; }
+.profile-rank-area { display: flex; flex-direction: column; align-items: center; gap: 14px; flex: 0 0 auto; }
+.profile-tag-featured { font-size: 14px; padding: 9px 14px; }
+.profile-text-area { min-width: 0; }
+.profile-text-area h1 { margin-top: 0; }
 
 @media (max-width: 620px) {
-  .profile-main-featured {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .profile-rank-area {
-    width: 100%;
-  }
-
-  .profile-text-area {
-    width: 100%;
-  }
+  .profile-main-featured { flex-direction: column; text-align: center; }
+  .profile-rank-area { width: 100%; }
+  .profile-text-area { width: 100%; }
 }
 
-.profile-card {
-  min-height: 230px;
-  display: flex;
-  align-items: center;
-}
-
-.profile-main-featured {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  align-items: center;
-  gap: 34px;
-}
-
-.profile-rank-area {
-  align-items: center;
-}
-
-.profile-tag-featured {
-  align-self: flex-start;
-  margin-left: 0;
-  font-size: 14px;
-  padding: 9px 15px;
-}
-
-.profile-photo {
-  width: 124px;
-  height: 124px;
-  flex-basis: 124px;
-}
-
-.profile-text-area {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.profile-text-area h1 {
-  margin: 0 0 10px;
-  font-size: clamp(48px, 7vw, 72px);
-  line-height: 0.9;
-}
-
-.profile-subtitle {
-  font-size: 17px;
-}
+.profile-card { min-height: 230px; display: flex; align-items: center; }
+.profile-main-featured { width: 100%; display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 34px; }
+.profile-rank-area { align-items: center; }
+.profile-tag-featured { align-self: flex-start; margin-left: 0; font-size: 14px; padding: 9px 15px; }
+.profile-photo { width: 124px; height: 124px; flex-basis: 124px; }
+.profile-text-area { display: flex; flex-direction: column; justify-content: center; }
+.profile-text-area h1 { margin: 0 0 10px; font-size: clamp(48px, 7vw, 72px); line-height: 0.9; }
+.profile-subtitle { font-size: 17px; }
 
 @media (max-width: 620px) {
-  .profile-card {
-    min-height: auto;
-  }
-
-  .profile-main-featured {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    text-align: center;
-  }
-
-  .profile-tag-featured {
-    align-self: center;
-  }
-
-  .profile-photo {
-    width: 108px;
-    height: 108px;
-    flex-basis: 108px;
-  }
-
-  .profile-text-area h1 {
-    font-size: clamp(40px, 13vw, 56px);
-  }
+  .profile-card { min-height: auto; }
+  .profile-main-featured { display: flex; flex-direction: column; gap: 18px; text-align: center; }
+  .profile-tag-featured { align-self: center; }
+  .profile-photo { width: 108px; height: 108px; flex-basis: 108px; }
+  .profile-text-area h1 { font-size: clamp(40px, 13vw, 56px); }
 }
 
-.profile-rank-area {
-  width: 150px;
-}
-
-.profile-tag-featured {
-  min-width: 170px;
-  justify-content: center;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.profile-photo {
-  margin-left: auto;
-  margin-right: auto;
-}
+.profile-rank-area { width: 150px; }
+.profile-tag-featured { min-width: 170px; justify-content: center; text-align: center; white-space: nowrap; }
+.profile-photo { margin-left: auto; margin-right: auto; }
 
 @media (max-width: 620px) {
-  .profile-rank-area {
-    width: 100%;
-  }
-
-  .profile-tag-featured {
-    width: auto;
-    white-space: normal;
-  }
+  .profile-rank-area { width: 100%; }
+  .profile-tag-featured { width: auto; white-space: normal; }
 }
