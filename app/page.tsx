@@ -4,25 +4,45 @@ import { useEffect, useState } from "react"
 import RankingClient from "./ranking-client"
 
 export default function Home() {
-  // 🔥 CONFIGURAÇÃO DO PRÓXIMO JOGO (Ajuste a data e os times aqui quando quiser)
-  const DATA_DO_JOGO = new Date("2026-07-01T21:45:00") // Data exemplo do próximo jogo
-  const ADVERSARIO = "PALMEIRAS"
-  const ADVERSARIO_EMOJI = "🐷"
+  // 📋 ESTADOS DINÂMICOS DO JOGO (Podem ser editados pelo painel admin integrado abaixo)
+  const [adversario, setAdversario] = useState("PALMEIRAS")
+  const [emojiAdversario, setEmojiAdversario] = useState("🐷")
+  const [dataJogoStr, setDataJogoStr] = useState("2026-07-01T21:45:00")
 
-  // Estados para a contagem regressiva
+  // Estados de controle da contagem regressiva e admin
   const [timeLeft, setTimeLeft] = useState({ dias: 0, horas: 0, minutos: 0, segundos: 0 })
   const [jogoIniciado, setJogoIniciado] = useState(false)
+  const [showAdminPanel, setShowAdminPanel] = useState(false)
 
-  // Lógica do Cronômetro
+  // Inputs temporários do painel admin
+  const [inputAdversario, setInputAdversario] = useState(adversario)
+  const [inputEmoji, setInputEmoji] = useState(emojiAdversario)
+  const [inputData, setInputData] = useState(dataJogoStr)
+
+  // Checa se "?admin=true" está na URL para liberar o painel de edição
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get("admin") === "true") {
+        setShowAdminPanel(true)
+      }
+    }
+  }, [])
+
+  // Lógica ativa do Cronômetro baseado no estado dataJogoStr
+  useEffect(() => {
+    const dataAlvo = new Date(dataJogoStr)
+    
     const timer = setInterval(() => {
       const agora = new Date().getTime()
-      const diferenca = DATA_DO_JOGO.getTime() - agora
+      const diferenca = dataAlvo.getTime() - agora
 
       if (diferenca <= 0) {
         clearInterval(timer)
         setJogoIniciado(true)
+        setTimeLeft({ dias: 0, horas: 0, minutos: 0, segundos: 0 })
       } else {
+        setJogoIniciado(false)
         const dias = Math.floor(diferenca / (1000 * 60 * 60 * 24))
         const horas = Math.floor((diferenca % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
         const minutos = Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60))
@@ -33,9 +53,18 @@ export default function Home() {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [DATA_DO_JOGO])
+  }, [dataJogoStr])
 
-  // Estilos Base do Design Carbono Rubro-Negro
+  // Função para salvar a nova configuração do jogo em tempo de execução
+  const salvarDadosAdmin = (e: React.FormEvent) => {
+    e.preventDefault()
+    setAdversario(inputAdversario.toUpperCase())
+    setEmojiAdversario(inputEmoji)
+    setDataJogoStr(inputData)
+    alert("Dados do próximo jogo atualizados com sucesso na tela!")
+  }
+
+  // Estilos Base do Layout Carbono
   const shellStyles: React.CSSProperties = {
     maxWidth: "480px",
     margin: "0 auto",
@@ -68,8 +97,7 @@ export default function Home() {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "4px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+    gap: "4px"
   }
 
   const timeBoxStyles: React.CSSProperties = {
@@ -84,7 +112,42 @@ export default function Home() {
   return (
     <main style={shellStyles}>
       
-      {/* 🔴 HEADER ESTILO ESTÁDIO */}
+      {/* 🔐 PAINEL ADMINISTRATIVO EMBUTIDO DIRECT-ON-SCREEN (Apenas com ?admin=true) */}
+      {showAdminPanel && (
+        <section style={{ ...cardStyles, border: "2px solid var(--crf-gold)", background: "#1a1610" }}>
+          <h3 style={{ fontSize: "14px", color: "var(--crf-gold)", fontWeight: 800, margin: "0 0 12px 0" }}>
+            🛠️ Gerenciar Próximo Jogo (Modo Admin)
+          </h3>
+          <form onSubmit={salvarDadosAdmin} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <input 
+              type="text" 
+              placeholder="Nome do Adversário (Ex: Palmeiras)" 
+              value={inputAdversario}
+              onChange={(e) => setInputAdversario(e.target.value)}
+              style={{ width: "100%", padding: "10px", background: "var(--bg-main)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: "10px" }}
+            />
+            <input 
+              type="text" 
+              placeholder="Emoji do Adversário (Ex: 🐷)" 
+              value={inputEmoji}
+              onChange={(e) => setInputEmoji(e.target.value)}
+              style={{ width: "100%", padding: "10px", background: "var(--bg-main)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: "10px" }}
+            />
+            <input 
+              type="text" 
+              placeholder="Data e Hora ISO (Ex: 2026-07-01T21:45:00)" 
+              value={inputData}
+              onChange={(e) => setInputData(e.target.value)}
+              style={{ width: "100%", padding: "10px", background: "var(--bg-main)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: "10px" }}
+            />
+            <button type="submit" style={{ background: "var(--crf-gold)", color: "#000", fontWeight: 700, padding: "10px", borderRadius: "10px", border: "none", cursor: "pointer" }}>
+              Atualizar Tela do Jogo
+            </button>
+          </form>
+        </section>
+      )}
+
+      {/* 🔴 HEADER FLAMENGO GOLS */}
       <section style={{
         ...cardStyles,
         background: "linear-gradient(135deg, #141417 0%, #050506 100%)",
@@ -104,7 +167,7 @@ export default function Home() {
             letterSpacing: "1px",
             textTransform: "uppercase"
           }}>
-            Plataforma VIP Nação
+            Plataforma da Nação
           </span>
         </div>
         <h1 style={{ fontSize: "24px", fontWeight: 900, margin: 0, color: "#fff" }}>
@@ -112,7 +175,7 @@ export default function Home() {
         </h1>
       </section>
 
-      {/* 📱 MENU DE NAVEGAÇÃO INTERATIVO (ADICIONADO) */}
+      {/* 📱 MENU DE NAVEGAÇÃO INTERATIVO */}
       <nav style={{ display: "flex", gap: "8px" }}>
         <a href="https://t.me/flamengogolsbot" target="_blank" rel="noreferrer" style={{ ...menuButtonStyles, background: "linear-gradient(135deg, var(--crf-red), #990f0f)", borderColor: "transparent" }}>
           <span style={{ fontSize: "16px" }}>🤖</span>
@@ -128,7 +191,7 @@ export default function Home() {
         </a>
       </nav>
 
-      {/* ⏱️ CARD DO PRÓXIMO JOGO COM CONTAGEM REGRESSIVA (REFORMULADO) */}
+      {/* ⏱️ CARD DO CONFRONTO COM CRONÔMETRO DINÂMICO */}
       <section style={cardStyles}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid var(--border-color)", paddingBottom: "12px" }}>
           <h3 style={{ fontSize: "11px", fontWeight: 700, margin: 0, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
@@ -147,7 +210,6 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Times */}
         <div style={{ display: "flex", alignItems: "center", justifyItems: "center", gap: "10px", padding: "5px 0 15px 0" }}>
           <div style={{ flex: 1, textAlign: "center" }}>
             <div style={{ fontSize: "36px", marginBottom: "4px" }}>🔴</div>
@@ -159,12 +221,11 @@ export default function Home() {
           </div>
 
           <div style={{ flex: 1, textAlign: "center" }}>
-            <div style={{ fontSize: "36px", marginBottom: "4px" }}>{ADVERSARIO_EMOJI}</div>
-            <strong style={{ fontSize: "13px", display: "block", color: "#fff", letterSpacing: "0.5px" }}>{ADVERSARIO}</strong>
+            <div style={{ fontSize: "36px", marginBottom: "4px" }}>{emojiAdversario}</div>
+            <strong style={{ fontSize: "13px", display: "block", color: "#fff", letterSpacing: "0.5px" }}>{adversario}</strong>
           </div>
         </div>
 
-        {/* Bloco do Cronômetro Ativo */}
         {!jogoIniciado ? (
           <div>
             <div style={{ fontSize: "10px", color: "var(--text-muted)", textAlign: "center", fontWeight: 700, textTransform: "uppercase", marginBottom: "8px", letterSpacing: "0.5px" }}>
@@ -191,16 +252,16 @@ export default function Home() {
           </div>
         ) : (
           <div style={{ background: "var(--bg-input)", padding: "12px", borderRadius: "14px", textAlign: "center", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600 }}>
-            🔒 Votações encerradas! A bola já está rolando.
+            🔒 Votações encerradas! Acompanhe o resultado.
           </div>
         )}
       </section>
 
-      {/* 💬 PASSO A PASSO (POSICIONADO LOGO ABAIXO DO CRONÔMETRO) */}
+      {/* 📋 PASSO A PASSO ATUALIZADO CONFORME AS DIRETRIZES DA ANÁLISE DE CÓDIGO */}
       <section id="como-participar" style={cardStyles}>
         <div style={{ borderBottom: "1px solid var(--border-color)", paddingBottom: "12px", marginBottom: "16px" }}>
           <h2 style={{ fontSize: "14px", fontWeight: 800, margin: 0, color: "#fff" }}>📋 Passo a Passo para Participar</h2>
-          <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: "2px 0 0 0" }}>Veja como deixar o seu palpite exato direto pelo Telegram.</p>
+          <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: "2px 0 0 0" }}>Entenda o fluxo correto das postagens oficiais.</p>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -216,15 +277,15 @@ export default function Home() {
             <div style={{ background: "var(--bg-input)", width: "26px", height: "26px", borderRadius: "8px", display: "flex", alignItems: "center", fontWeight: 700, fontSize: "11px", color: "var(--crf-red)", flexShrink: 0, justifyContent: "center" }}>02</div>
             <div>
               <h4 style={{ fontSize: "12px", fontWeight: 700, margin: "0 0 2px 0", color: "#fff" }}>Comente seu Placar</h4>
-              <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0, lineHeight: "1.4" }}>Abra os comentários da postagem e envie o seu placar exato. O bot mapeia a sua conta do Telegram instantaneamente.</p>
+              <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0, lineHeight: "1.4" }}>Abra os comentários da postagem e envie o seu palpite de placar exato. O bot captura seu ID de usuário do Telegram na mesma hora.</p>
             </div>
           </div>
 
           <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
             <div style={{ background: "var(--bg-input)", width: "26px", height: "26px", borderRadius: "8px", display: "flex", alignItems: "center", fontWeight: 700, fontSize: "11px", color: "var(--crf-red)", flexShrink: 0, justifyContent: "center" }}>03</div>
             <div>
-              <h4 style={{ fontSize: "12px", fontWeight: 700, margin: "0 0 2px 0", color: "#fff" }}>Fim de Jogo e Pontuação</h4>
-              <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0, lineHeight: "1.4" }}>Após o apito final, o sistema confere quem cravou o placar exato e adiciona +1 ponto para atualizar a classificação geral aqui na página.</p>
+              <h4 style={{ fontSize: "12px", fontWeight: 700, margin: "0 0 2px 0", color: "#fff" }}>Fim de Jogo e Pontos</h4>
+              <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0, lineHeight: "1.4" }}>Após o apito final, o sistema confere quem cravou o placar correto e adiciona +1 ponto para atualizar a classificação geral aqui no site.</p>
             </div>
           </div>
         </div>
@@ -242,7 +303,7 @@ export default function Home() {
 
       {/* 👣 FOOTER */}
       <footer style={{ textAlign: "center", padding: "20px 0 10px 0", borderTop: "1px solid var(--border-color)", marginTop: "10px", display: "flex", flexDirection: "column", gap: "2px" }}>
-        <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>Desenvolvido exclusivamente para o grupo VIP</span>
+        <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>Desenvolvido para a Nação Rubro-Negra</span>
         <strong style={{ fontSize: "11px", color: "#fff", letterSpacing: "0.5px" }}>⚫🔴 FLAMENGO GOLS</strong>
       </footer>
 
