@@ -18,7 +18,7 @@ export default function AdminPainel() {
   const [senha, setSenha] = useState("")
   const [isAutenticado, setIsAutenticado] = useState(false)
   
-  // 🏟️ ESTADOS DO CONFRONTO PRINCIPAL (CASA x FORA)
+  // 🏟️ ESTADOS DO CONFRONTO PRINCIPAL
   const [timeCasa, setTimeCasa] = useState("FLAMENGO")
   const [logoCasaUrl, setLogoCasaUrl] = useState("https://s.sde.globo.com/media/organizations/2018/04/10/flamengo_60x60.png")
   const [timeFora, setTimeFora] = useState("PALMEIRAS")
@@ -77,11 +77,36 @@ export default function AdminPainel() {
     }
   }, [])
 
-  const handleLogin = (e: React.FormEvent) => {
+  // 🔐 FUNÇÃO DE LOGIN MODIFICADA COM VALIDAÇÃO CRIPTOGRÁFICA EM TEMPO REAL
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!senha.trim()) return alert("Por favor, digite a senha de acesso!")
-    sessionStorage.setItem("admin_token", senha)
-    setIsAutenticado(true)
+    
+    setEnviando(true)
+    try {
+      const res = await fetch("/api/proximo-jogo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senha, validarAcesso: true })
+      })
+      
+      const resultado = await res.json()
+      
+      if (res.status === 401 || !resultado.ok) {
+        alert("❌ Senha incorreta! O acesso ao painel administrativo foi estritamente recusado.")
+        sessionStorage.removeItem("admin_token")
+        setSenha("")
+        return
+      }
+
+      // Se passou na API, salva o token na sessão local e libera os campos
+      sessionStorage.setItem("admin_token", senha)
+      setIsAutenticado(true)
+    } catch {
+      alert("Erro crítico de comunicação com o servidor ao autenticar.")
+    } finally {
+      setEnviando(false)
+    }
   }
 
   const handleLogout = () => {
@@ -123,7 +148,6 @@ export default function AdminPainel() {
     setProximosJogos(proximosJogos.filter((_, index) => index !== indexRemover))
   }
 
-  // 🚀 FUNÇÃO MASTER: PUXA O JOGO DA AGENDA DIRETO PARA O TOPO DO CRONÔMETRO
   const promoverParaPrincipal = (index: number) => {
     const jogo = proximosJogos[index]
     
@@ -136,7 +160,6 @@ export default function AdminPainel() {
     setTransmissao(jogo.transmissao)
     setDataJogo(jogo.data.slice(0, 16))
 
-    // Remove ele automaticamente da lista de espera (já que virou o principal)
     setProximosJogos(proximosJogos.filter((_, i) => i !== index))
     alert(`⚡ ${jogo.timeCasa} x ${jogo.timeFora} foi movido para o Bloco Principal. Clique no botão vermelho abaixo para salvar no servidor!`)
   }
@@ -153,9 +176,16 @@ export default function AdminPainel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ timeCasa, logoCasaUrl, timeFora, logoForaUrl, data: dataFormatada, campeonato, rodada, transmissao, proximos: proximosJogos, senha })
       })
-      if ((await res.json()).ok) alert("🚨 Configurações da fila atualizadas e salvas com sucesso!")
+      
+      const resultado = await res.json()
+      
+      if (resultado.ok) {
+        alert("🚨 Configurações da fila atualizadas e salvas com sucesso!")
+      } else {
+        alert("❌ Falha ao salvar: " + (resultado.error || "Erro interno no servidor."))
+      }
     } catch {
-      alert("Erro de comunicação com o servidor.")
+      alert("Erro crítico de comunicação com o servidor.")
     } finally {
       setEnviando(false)
     }
@@ -170,8 +200,10 @@ export default function AdminPainel() {
         <div style={{ background: "var(--bg-card)", borderRadius: "24px", padding: "24px", border: "1px solid var(--border-color)" }}>
           <h1 style={{ fontSize: "20px", fontWeight: 900, color: "var(--text-main)", marginBottom: "12px" }}>🔒 ÁREA RESTRITA</h1>
           <form onSubmit={handleLogin}>
-            <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} style={inputStyles} placeholder="Chave mestre..." />
-            <button type="submit" style={{ width: "100%", background: "var(--text-main)", color: "var(--bg-card)", border: "none", padding: "14px", borderRadius: "12px", fontWeight: 800 }}>Acessar</button>
+            <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} style={inputStyles} placeholder={enviando ? "Autenticando..." : "Chave mestre..."} disabled={enviando} />
+            <button type="submit" style={{ width: "100%", background: "var(--text-main)", color: "var(--bg-card)", border: "none", padding: "14px", borderRadius: "12px", fontWeight: 800, cursor: "pointer" }} disabled={enviando}>
+              {enviando ? "Validando Chave..." : "Acessar Painel"}
+            </button>
           </form>
         </div>
       ) : (
@@ -179,7 +211,7 @@ export default function AdminPainel() {
           
           <div style={{ background: "var(--bg-card)", borderRadius: "20px", padding: "14px 20px", border: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <strong style={{ fontSize: "15px", color: "var(--text-main)" }}>⚙️ Central Flamengo Gols</strong>
-            <button onClick={handleLogout} style={{ background: "rgba(204,20,20,0.08)", border: "none", color: "var(--crf-red)", fontSize: "12px", fontWeight: 800, padding: "6px 14px", borderRadius: "8px" }}>Sair</button>
+            <button onClick={handleLogout} style={{ background: "rgba(204,20,20,0.08)", border: "none", color: "var(--crf-red)", fontSize: "12px", fontWeight: 800, padding: "6px 14px", borderRadius: "8px", cursor: "pointer" }}>Sair</button>
           </div>
 
           {/* JOGO ATIVO */}
@@ -221,7 +253,7 @@ export default function AdminPainel() {
             <button onClick={adicionarJogoAgenda} style={{ width: "100%", background: "var(--bg-input)", border: "1px solid var(--border-color)", color: "var(--text-main)", padding: "12px", borderRadius: "10px", fontWeight: 850, fontSize: "12px", cursor: "pointer" }}>➕ Inserir Jogo na Agenda de Espera</button>
           </div>
 
-          {/* JOGOS SALVOS (COM BOTÃO DE PROMOVER ATIVO) */}
+          {/* JOGOS SALVOS */}
           <div style={{ background: "var(--bg-card)", borderRadius: "24px", padding: "20px", border: "1px solid var(--border-color)" }}>
             <h2 style={{ fontSize: "14px", fontWeight: 900, marginBottom: "12px", color: "var(--text-main)" }}>📋 Fila de Espera Atual ({proximosJogos.length} de 5)</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -235,7 +267,6 @@ export default function AdminPainel() {
                       <span style={{ display: "block", color: "var(--text-muted)", fontSize: "11px", marginTop: "2px" }}>{jogo.campeonato}</span>
                     </div>
                     <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
-                      {/* ✨ BOTÃO DE ATALHO DE FLUXO ROLANTE */}
                       <button onClick={() => promoverParaPrincipal(idx)} style={{ background: "rgba(46,125,50,0.08)", border: "none", color: "#2e7d32", fontWeight: 800, fontSize: "11px", cursor: "pointer", padding: "6px 10px", borderRadius: "6px" }}>Promover</button>
                       <button onClick={() => removerJogoAgenda(idx)} style={{ background: "transparent", border: "none", color: "var(--crf-red)", fontWeight: 800, fontSize: "11px", cursor: "pointer", padding: "6px" }}>Remover</button>
                     </div>
