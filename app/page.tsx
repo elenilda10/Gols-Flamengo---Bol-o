@@ -17,16 +17,19 @@ type JogoFuturo = {
 }
 
 export default function Home() {
+  // 🔄 ESTADO DE CARREGAMENTO INICIAL
+  const [carregando, setCarregando] = useState(true)
+
   // 🏟️ CONFIGURAÇÃO DE MANDO DE CAMPO DINÂMICO
-  const [timeCasa, setTimeCasa] = useState("FLAMENGO")
-  const [logoCasaUrl, setLogoCasaUrl] = useState("https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg")
-  const [timeFora, setTimeFora] = useState("PALMEIRAS")
-  const [logoForaUrl, setLogoForaUrl] = useState("https://s.sde.globo.com/media/organizations/2014/04/14/palmeiras_60x60.png")
+  const [timeCasa, setTimeCasa] = useState("")
+  const [logoCasaUrl, setLogoCasaUrl] = useState("")
+  const [timeFora, setTimeFora] = useState("")
+  const [logoForaUrl, setLogoForaUrl] = useState("")
   
-  const [dataJogoStr, setDataJogoStr] = useState("2026-07-15T21:45:00")
-  const [campeonato, setCampeonato] = useState("Campeonato Brasileiro")
-  const [rodada, setRodada] = useState("14ª")
-  const [transmissao, setTransmissao] = useState("Globo, Premiere")
+  const [dataJogoStr, setDataJogoStr] = useState("")
+  const [campeonato, setCampeonato] = useState("")
+  const [rodada, setRodada] = useState("")
+  const [transmissao, setTransmissao] = useState("")
   
   // 🗓️ AGENDA DE JOGOS FUTUROS (ESTRUTURA COMPLETA)
   const [proximosJogos, setProximosJogos] = useState<JogoFuturo[]>([])
@@ -36,7 +39,7 @@ export default function Home() {
   const [jogoIniciado, setJogoIniciado] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
 
-  // Inicializa o tema salvo
+  // Inicializa o tema salvos
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme")
     if (savedTheme === "dark") {
@@ -65,26 +68,32 @@ export default function Home() {
     fetch("/api/proximo-jogo")
       .then((res) => res.json())
       .then((data) => {
-        if (data.timeCasa) setTimeCasa(data.timeCasa)
-        if (data.logoCasaUrl) setLogoCasaUrl(data.logoCasaUrl)
-        if (data.timeFora) setTimeFora(data.timeFora)
-        if (data.logoForaUrl) setLogoForaUrl(data.logoForaUrl)
-        if (data.data) setDataJogoStr(data.data)
-        if (data.campeonato) setCampeonato(data.campeonato)
-        if (data.rodada) setRodada(data.rodada)
-        if (data.transmissao) setTransmissao(data.transmissao)
-        
-        if (data.proximos && Array.isArray(data.proximos)) {
-          setProximosJogos(data.proximos)
-        } else {
-          // Mock profissional estruturado com a nova tipagem caso o banco esteja vazio
-          setProximosJogos([
-            { timeCasa: "FLAMENGO", logoCasaUrl: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg", timeFora: "FLUMINENSE", logoForaUrl: "https://s.sde.globo.com/media/organizations/2014/04/14/fluminense_60x60.png", data: "2026-07-19T16:00:00", campeonato: "Campeonato Brasileiro", rodada: "15ª", transmissao: "Globo, Premiere" },
-            { timeCasa: "BOTAFOGO", logoCasaUrl: "https://s.sde.globo.com/media/organizations/2014/04/14/botafogo_60x60.png", timeFora: "FLAMENGO", logoForaUrl: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg", data: "2026-07-22T21:30:00", campeonato: "Copa do Brasil", rodada: "Oitavas", transmissao: "Prime Video" }
-          ])
+        if (data) {
+          if (data.timeCasa) setTimeCasa(data.timeCasa)
+          if (data.logoCasaUrl) setLogoCasaUrl(data.logoCasaUrl)
+          if (data.timeFora) setTimeFora(data.timeFora)
+          if (data.logoForaUrl) setLogoForaUrl(data.logoForaUrl)
+          if (data.data) setDataJogoStr(data.data)
+          if (data.campeonato) setCampeonato(data.campeonato)
+          if (data.rodada) setRodada(data.rodada)
+          if (data.transmissao) setTransmissao(data.transmissao)
+          
+          if (data.proximos && Array.isArray(data.proximos)) {
+            setProximosJogos(data.proximos)
+          } else {
+            // Mock profissional estruturado com a nova tipagem caso o banco esteja vazio
+            setProximosJogos([
+              { timeCasa: "FLAMENGO", logoCasaUrl: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg", timeFora: "FLUMINENSE", logoForaUrl: "https://s.sde.globo.com/media/organizations/2014/04/14/fluminense_60x60.png", data: "2026-07-19T16:00:00", campeonato: "Campeonato Brasileiro", rodada: "15ª", transmissao: "Globo, Premiere" },
+              { timeCasa: "BOTAFOGO", logoCasaUrl: "https://s.sde.globo.com/media/organizations/2014/04/14/botafogo_60x60.png", timeFora: "FLAMENGO", logoForaUrl: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg", data: "2026-07-22T21:30:00", campeonato: "Copa do Brasil", rodada: "Oitavas", transmissao: "Prime Video" }
+            ])
+          }
         }
       })
       .catch(() => {})
+      .finally(() => {
+        // Desativa a tela de carregamento somente após obter a resposta da API
+        setCarregando(false)
+      })
   }, [])
 
   // Cronômetro ativo
@@ -122,6 +131,32 @@ export default function Home() {
     const hora = String(d.getHours()).padStart(2, "0")
     const min = String(d.getMinutes()).padStart(2, "0")
     return `${dia}/${mes} às ${hora}h${min}`
+  }
+
+  // ⏳ SE ESTIVER CARREGANDO, MOSTRA APENAS O ICONE GIRATÓRIO CENTRALIZADO
+  if (carregando) {
+    return (
+      <main className="site-shell" style={{ maxWidth: "500px", padding: "20px 12px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "80vh" }}>
+        <svg width="50" height="50" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" stroke="var(--crf-red, #cc1414)">
+          <g fill="none" fillRule="evenodd" strokeWidth="4">
+            <circle cx="22" cy="22" r="20" strokeOpacity=".1" stroke="var(--text-muted, #888)" />
+            <path d="M22 2C33.046 2 42 10.954 42 22">
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0 22 22"
+                to="360 22 22"
+                dur="0.8s"
+                repeatCount="indefinite"
+              />
+            </path>
+          </g>
+        </svg>
+        <p style={{ marginTop: "16px", fontSize: "12px", fontWeight: 800, color: "var(--text-muted)", letterSpacing: "1px" }}>
+          CARREGANDO BOLÃO...
+        </p>
+      </main>
+    )
   }
 
   return (
