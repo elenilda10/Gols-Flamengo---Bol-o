@@ -86,6 +86,16 @@ function Avatar({ player }: { player: RankingItem }) {
 }
 
 export default function UserProfileClient({ uid }: { uid: string }) {
+  // ✨ SINCRO DE TEMA AUTOMÁTICO COM A ESCOLA DA HOME
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme")
+    if (savedTheme === "dark") {
+      document.body.classList.add("dark")
+    } else {
+      document.body.classList.remove("dark")
+    }
+  }, [])
+
   const [player, setPlayer] = useState<RankingItem | null>(null)
   const [rankingPosition, setRankingPosition] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
