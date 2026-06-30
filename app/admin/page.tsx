@@ -34,7 +34,7 @@ export default function AdminPainel() {
   
   // Form de adição/edição de jogo futuro
   const [fTimeCasa, setFTimeCasa] = useState("FLAMENGO")
-  const [fLogoCasaUrl, setFLogoCasaUrl] = useState("https://s.sde.globo.com/media/organizations/2018/04/10/flamengo_60x60.png")
+  const [fLogoCasaUrl, setFLogoCasaUrl] = useState("")
   const [fTimeFora, setFTimeFora] = useState("")
   const [fLogoForaUrl, setFLogoForaUrl] = useState("")
   
