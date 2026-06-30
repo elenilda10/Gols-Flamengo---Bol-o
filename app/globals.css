@@ -3,25 +3,13 @@
 @tailwind utilities;
 
 /* ==========================================================================
-   🧱 1. VARIÁVEIS DE CORES DINÂMICAS (SISTEMA DUAL-THEME)
+   🧱 1. VARIÁVEIS DE CORES DINÂMICAS (SISTEMA DUAL-THEME MASTER)
    ========================================================================== */
 
 /* ☀️ TEMA CLARO PREMIUM (PADRÃO) */
 :root {
-  --crf-red: #cc1414; /* 🚀 Adicionado para corrigir os botões no modo claro */
+  --crf-red: #cc1414; 
   --crf-gold: #b38f43;
-  /* ... mantenha o restante das variáveis do :root igual ... */
-
-/* 🌙 TEMA ESCURO CARBONO */
-body.dark {
-  --crf-red: #ef4444; /* 🚀 Adicionado para o modo escuro */
-  --crf-gold: #ffcc33;
-  /* ... mantenha o restante das variáveis do body.dark igual ... */
-
-
-
-/* ☀️ TEMA CLARO PREMIUM (PADRÃO) */
-:root {
   --bg-main: #f4f6f9;
   --bg-body-gradient: radial-gradient(circle at 12% 8%, rgba(229, 9, 20, 0.04), transparent 28%),
                       radial-gradient(circle at 88% 18%, rgba(127, 29, 29, 0.03), transparent 30%),
@@ -54,6 +42,8 @@ body.dark {
 
 /* 🌙 TEMA ESCURO CARBONO (ATIVADO VIA CLASSE .dark NO BODY) */
 body.dark {
+  --crf-red: #ef4444; 
+  --crf-gold: #ffcc33;
   --bg-main: #060606;
   --bg-body-gradient: radial-gradient(circle at 12% 8%, rgba(229, 9, 20, 0.36), transparent 28%),
                       radial-gradient(circle at 88% 18%, rgba(127, 29, 29, 0.32), transparent 30%),
@@ -101,7 +91,7 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--text-main);
-  font-family: 'Poppins', Arial, Helvetica, sans-serif; /* 🚀 FONTE ATIVADA DO LAYOUT */
+  font-family: 'Poppins', Arial, Helvetica, sans-serif; 
   overflow-x: hidden;
   background: var(--bg-body-gradient);
   transition: background 0.3s ease, color 0.3s ease;
@@ -131,7 +121,6 @@ img {
   -webkit-user-select: none;
 }
 
-/* 💀 LOADING FANTASMA (SKELETON ANIMATION) */
 @keyframes pulse-skeleton {
   0% { opacity: 0.6; }
   50% { opacity: 1; }
@@ -289,7 +278,7 @@ img {
 .hero-button.channel:hover { background: #ad0f0f; }
 
 /* ==========================================================================
-   📋 5. SEÇÃO COMO FUNCIONA / CARDS EXPLICATIVOS DUAL-THEME
+   📋 5. SEÇÃO COMO FUNCIONA / CARDS EXPLICATIVOS
    ========================================================================== */
 
 .how-section {
@@ -341,7 +330,6 @@ img {
   gap: 12px;
 }
 
-/* 🎨 BLINDA E UNIFICA TODOS OS FORMATOS DE CARDS POSSÍVEIS */
 .how-card,
 .step-card,
 .info-card,
@@ -358,12 +346,6 @@ img {
   border: 1px solid var(--how-card-border) !important;
   box-shadow: var(--shadow-card) !important;
   transition: all 0.3s ease;
-}
-
-/* Remove detalhes amarelados antigos */
-.how-card::after, .step-card::after, .info-card::after, .explanation-card::after, .feature-card::after, .workflow-card::after, .guide-card::after {
-  content: none !important;
-  display: none !important;
 }
 
 .how-card::before, .step-card::before, .info-card::before, .explanation-card::before, .feature-card::before, .workflow-card::before, .guide-card::before {
@@ -438,7 +420,7 @@ img {
 .stat-card p { margin: 6px 0 0; color: var(--text-muted); font-size: 14px; }
 
 /* ==========================================================================
-   🏆 7. SECTIONS & TABELA DE CLASSIFICAÇÃO (RANK-CARDS)
+   🏆 7. SECTIONS & TABELA DE CLASSIFICAÇÃO
    ========================================================================== */
 
 .ranking-section,
@@ -598,7 +580,7 @@ img {
 .back-link:hover { background: var(--bg-input); transform: translateX(-2px); }
 
 /* ==========================================================================
-   🕒 9. HISTÓRICO DE PALPITES (HISTORY ITEMS)
+   🕒 9. HISTÓRICO DE PALPITES
    ========================================================================== */
 
 .history-item {
@@ -629,7 +611,7 @@ img {
 .history-item span { display: block; margin-top: 6px; color: var(--text-muted); font-size: 14px; }
 
 /* ==========================================================================
-   👣 10. FOOTER & LOADING CARDS STRUCTS
+   👣 10. FOOTER & LOADING CARDS
    ========================================================================== */
 
 .site-footer,
@@ -660,7 +642,7 @@ img {
 .loading-card p, .error-card p { margin: 0; color: var(--text-muted); }
 
 /* ==========================================================================
-   📱 11. MEDIA QUERIES (RESPONSIVIDADE INTEGRAL PRESERVADA)
+   📱 11. MEDIA QUERIES (RESPONSIVIDADE INTEGRAL)
    ========================================================================== */
 
 @media (max-width: 920px) {
@@ -702,7 +684,6 @@ img {
   .history-item { align-items: flex-start; }
 }
 
-/* PROFILE DESIGN POLISH */
 .profile-card { min-height: 188px; display: flex; align-items: center; }
 .profile-main { width: 100%; }
 .profile-photo { width: 118px; height: 118px; flex-basis: 118px; }
@@ -765,7 +746,7 @@ img {
   .profile-tag-featured { width: auto; white-space: normal; }
 }
 
-/* 🏟️ CLASSE DE PLACAR PROFISSIONAL (ADICIONAR NO FINAL DO GLOBALS.CSS) */
+/* 🏟️ CLASSE DE PLACAR PROFISSIONAL */
 .font-scoreboard {
   font-family: 'Barlow Condensed', Arial, sans-serif;
   font-variant-numeric: tabular-nums;
