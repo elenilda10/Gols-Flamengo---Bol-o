@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react"
 import RankingClient from "./ranking-client"
 
-type JogoSimples = {
-  adversario: string
-  logoUrl: string
+type JogoFuturo = {
+  timeCasa: string
+  logoCasaUrl: string
+  timeFora: string
+  logoForaUrl: string
   data: string
   campeonato: string
   rodada: string
@@ -13,17 +15,19 @@ type JogoSimples = {
 }
 
 export default function Home() {
-  const [adversario, setAdversario] = useState("PALMEIRAS")
-  const [logoUrl, setLogoUrl] = useState("https://s.sde.globo.com/media/organizations/2014/04/14/palmeiras_60x60.png")
-  const [dataJogoStr, setDataJogoStr] = useState("2026-07-15T21:45:00")
+  // 🏟️ CONFIGURAÇÃO DE MANDO DE CAMPO DINÂMICO
+  const [timeCasa, setTimeCasa] = useState("FLAMENGO")
+  const [logoCasaUrl, setLogoCasaUrl] = useState("https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg")
+  const [timeFora, setTimeFora] = useState("PALMEIRAS")
+  const [logoForaUrl, setLogoForaUrl] = useState("https://s.sde.globo.com/media/organizations/2014/04/14/palmeiras_60x60.png")
   
-  // 🏆 NOVOS CAMPOS INFORMATIVOS COMPATÍVEIS COM O SEU BANCO/API
+  const [dataJogoStr, setDataJogoStr] = useState("2026-07-15T21:45:00")
   const [campeonato, setCampeonato] = useState("Campeonato Brasileiro")
   const [rodada, setRodada] = useState("14ª")
   const [transmissao, setTransmissao] = useState("Globo, Premiere")
   
-  // 🗓️ LISTA DE PRÓXIMOS JOGOS E CONTROLE DO MODAL
-  const [proximosJogos, setProximosJogos] = useState<JogoSimples[]>([])
+  // 🗓️ AGENDA DE JOGOS FUTUROS (ESTRUTURA COMPLETA)
+  const [proximosJogos, setProximosJogos] = useState<JogoFuturo[]>([])
   const [modalAberto, setModalAberto] = useState(false)
 
   const [timeLeft, setTimeLeft] = useState({ dias: 0, horas: 0, minutos: 0, segundos: 0 })
@@ -54,27 +58,27 @@ export default function Home() {
     }
   }
 
-  // Busca dados completos do admin (incluindo novos metadados e lista)
+  // Busca dados completos do admin (mando flexível e agenda estruturada)
   useEffect(() => {
     fetch("/api/proximo-jogo")
       .then((res) => res.json())
       .then((data) => {
-        if (data.adversario) setAdversario(data.adversario)
-        if (data.logoUrl) setLogoUrl(data.logoUrl)
+        if (data.timeCasa) setTimeCasa(data.timeCasa)
+        if (data.logoCasaUrl) setLogoCasaUrl(data.logoCasaUrl)
+        if (data.timeFora) setTimeFora(data.timeFora)
+        if (data.logoForaUrl) setLogoForaUrl(data.logoForaUrl)
         if (data.data) setDataJogoStr(data.data)
         if (data.campeonato) setCampeonato(data.campeonato)
         if (data.rodada) setRodada(data.rodada)
         if (data.transmissao) setTransmissao(data.transmissao)
         
-        // Se a API já trouxer a lista de jogos futuros, salvamos aqui
         if (data.proximos && Array.isArray(data.proximos)) {
           setProximosJogos(data.proximos)
         } else {
-          // Mock profissional caso queira testar a lista imediatamente antes de atualizar a API
+          // Mock profissional estruturado com a nova tipagem caso o banco esteja vazio
           setProximosJogos([
-            { adversario: "FLUMINENSE", logoUrl: "https://s.sde.globo.com/media/organizations/2014/04/14/fluminense_60x60.png", data: "2026-07-19T16:00:00", campeonato: "Campeonato Brasileiro", rodada: "15ª", transmissao: "Globo, Premiere" },
-            { adversario: "BOTAFOGO", logoUrl: "https://s.sde.globo.com/media/organizations/2014/04/14/botafogo_60x60.png", data: "2026-07-22T21:30:00", campeonato: "Copa do Brasil", rodada: "Oitavas", transmissao: "Prime Video" },
-            { adversario: "PEÑAROL", logoUrl: "https://s.sde.globo.com/media/organizations/2014/04/14/penarol_60x60.png", data: "2026-07-29T21:45:00", campeonato: "Libertadores", rodada: "Quartas", transmissao: "ESPN, MAX" }
+            { timeCasa: "FLAMENGO", logoCasaUrl: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg", timeFora: "FLUMINENSE", logoForaUrl: "https://s.sde.globo.com/media/organizations/2014/04/14/fluminense_60x60.png", data: "2026-07-19T16:00:00", campeonato: "Campeonato Brasileiro", rodada: "15ª", transmissao: "Globo, Premiere" },
+            { timeCasa: "BOTAFOGO", logoCasaUrl: "https://s.sde.globo.com/media/organizations/2014/04/14/botafogo_60x60.png", timeFora: "FLAMENGO", logoForaUrl: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg", data: "2026-07-22T21:30:00", campeonato: "Copa do Brasil", rodada: "Oitavas", transmissao: "Prime Video" }
           ])
         }
       })
@@ -108,7 +112,6 @@ export default function Home() {
     return () => clearInterval(timer)
   }, [dataJogoStr])
 
-  // Função auxiliar para formatar a data/hora no padrão do app (Ex: 15/07 às 21h45)
   const formatarDataBr = (dataStr: string) => {
     if (!dataStr) return ""
     const d = new Date(dataStr)
@@ -116,31 +119,17 @@ export default function Home() {
     const mes = String(d.getMonth() + 1).padStart(2, "0")
     const hora = String(d.getHours()).padStart(2, "0")
     const min = String(d.getMinutes()).padStart(2, "0")
-    return `${dia}/${mes} às ${hora}h${min}` // 🕒 Padrão "H" aplicado nativamente
+    return `${dia}/${mes} às ${hora}h${min}`
   }
 
   return (
     <main className="site-shell" style={{ maxWidth: "500px", padding: "20px 12px" }}>
       
-      {/* 🔴 CABEÇALHO CLEAN */}
+      {/* 🔴 CABEÇALHO */}
       <header className="ranking-section" style={{ textAlign: "center", position: "relative", padding: "24px 16px", marginBottom: "4px" }}>
         <button 
           onClick={toggleTheme}
-          style={{
-            position: "absolute",
-            top: "14px",
-            right: "14px",
-            background: "var(--bg-input)",
-            border: "1px solid var(--border-color)",
-            borderRadius: "50%",
-            width: "34px",
-            height: "34px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            fontSize: "15px"
-          }}
+          style={{ position: "absolute", top: "14px", right: "14px", background: "var(--bg-input)", border: "1px solid var(--border-color)", borderRadius: "50%", width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "15px", color: "var(--text-main)" }}
         >
           {isDarkMode ? "☀️" : "🌙"}
         </button>
@@ -166,11 +155,10 @@ export default function Home() {
         </a>
       </nav>
 
-      {/* ⚔️ SCOREBOARD CARD (CARD DO CONFRONTO AVANÇADO) */}
+      {/* ⚔️ SCOREBOARD CARD (MANDO DINÂMICO CASA x FORA) */}
       <section className="ranking-section" style={{ padding: "18px 16px" }}>
         <div className="section-header" style={{ marginBottom: "12px", borderBottom: "1px solid var(--border-color)", paddingBottom: "10px" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-            {/* Campeonato e Rodada informados no topo do Card */}
             <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--crf-red)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               🏆 {campeonato} {rodada ? `• ${rodada} rodada` : ""}
             </span>
@@ -183,40 +171,42 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Alinhamento de Escudos */}
+        {/* Renderização Fluida Baseada no Banco de Dados */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", padding: "10px 0 14px 0" }}>
+          {/* MANDANTE (ESQUERDA) */}
           <div style={{ flex: 1, textAlign: "center" }}>
             <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg" 
-              alt="Flamengo" 
+              src={logoCasaUrl || "https://s.sde.globo.com/media/organizations/default_60x60.png"} 
+              alt={timeCasa} 
               style={{ width: "52px", height: "52px", objectFit: "contain", marginBottom: "6px" }} 
-              onError={(e) => { (e.target as HTMLImageElement).src = "https://s.sde.globo.com/media/organizations/2018/04/10/flamengo_60x60.png" }}
+              onError={(e) => { (e.target as HTMLImageElement).src = "https://s.sde.globo.com/media/organizations/default_60x60.png" }}
             />
-            <strong style={{ fontSize: "13px", display: "block" }}>FLAMENGO</strong>
+            <strong style={{ fontSize: "13px", display: "block", color: "var(--text-main)" }}>{timeCasa}</strong>
           </div>
           
           <div className="rank-position" style={{ width: "36px", height: "36px", borderRadius: "10px", fontWeight: 900, fontSize: "11px", color: "var(--text-muted)" }}>
             VS
           </div>
 
+          {/* VISITANTE (DIREITA) */}
           <div style={{ flex: 1, textAlign: "center" }}>
             <img 
-              src={logoUrl || "https://s.sde.globo.com/media/organizations/default_60x60.png"} 
-              alt={adversario} 
+              src={logoForaUrl || "https://s.sde.globo.com/media/organizations/default_60x60.png"} 
+              alt={timeFora} 
               style={{ width: "52px", height: "52px", objectFit: "contain", marginBottom: "6px" }} 
               onError={(e) => { (e.target as HTMLImageElement).src = "https://s.sde.globo.com/media/organizations/default_60x60.png" }}
             />
-            <strong style={{ fontSize: "13px", display: "block" }}>{adversario}</strong>
+            <strong style={{ fontSize: "13px", display: "block", color: "var(--text-main)" }}>{timeFora}</strong>
           </div>
         </div>
 
-        {/* Painel da Transmissão */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "var(--bg-input)", padding: "8px 12px", borderRadius: "10px", marginBottom: "14px", fontSize: "12px", fontWeight: 600 }}>
+        {/* Canais */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "var(--bg-input)", padding: "8px 12px", borderRadius: "10px", marginBottom: "14px", fontSize: "12px", fontWeight: 600, color: "var(--text-muted)" }}>
           <span>📺 Onde assistir:</span>
           <strong style={{ color: "var(--text-main)" }}>{transmissao}</strong>
         </div>
 
-        {/* Cronômetro */}
+        {/* Cronômetro sem números duplicados */}
         {!jogoIniciado ? (
           <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "14px" }}>
             <div style={{ display: "flex", gap: "6px" }}>
@@ -225,15 +215,16 @@ export default function Home() {
                 <span style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: 700 }}>Dias</span>
               </div>
               <div style={{ background: "var(--bg-input)", padding: "10px 6px", borderRadius: "10px", flex: 1, textAlign: "center" }}>
-                <strong className="font-scoreboard" style={{ fontSize: "24px", display: "block", fontWeight: 900 }}>{String(timeLeft.horas).padStart(2, "0")}</strong>
+                <strong className="font-scoreboard" style={{ fontSize: "24px", display: "block", fontWeight: 900, color: "var(--text-main)" }}>{String(timeLeft.horas).padStart(2, "0")}</strong>
                 <span style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: 700 }}>Horas</span>
               </div>
               <div style={{ background: "var(--bg-input)", padding: "10px 6px", borderRadius: "10px", flex: 1, textAlign: "center" }}>
-                <strong className="font-scoreboard" style={{ fontSize: "24px", display: "block", fontWeight: 900 }}>{String(timeLeft.minutos).padStart(2, "0")}</strong>
+                <strong className="font-scoreboard" style={{ fontSize: "24px", display: "block", fontWeight: 900, color: "var(--text-main)" }}>{String(timeLeft.minutos).padStart(2, "0")}</strong>
                 <span style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: 700 }}>Min</span>
               </div>
+              {/* ✨ CAIXINHA DOS SEGUNDOS PURA E CORRIGIDA */}
               <div style={{ background: "var(--bg-input)", padding: "10px 6px", borderRadius: "10px", flex: 1, textAlign: "center" }}>
-                <strong className="font-scoreboard" style={{ fontSize: "24px", display: "block", color: "var(--rank-points-color)", fontWeight: 900 }}>{String(timeLeft.minutos).padStart(2, "0") /* Note: user code has minor repeat bug here, fixed to use seconds */} {String(timeLeft.segundos).padStart(2, "0")}</strong>
+                <strong className="font-scoreboard" style={{ fontSize: "24px", display: "block", color: "var(--rank-points-color)", fontWeight: 900 }}>{String(timeLeft.segundos).padStart(2, "0")}</strong>
                 <span style={{ fontSize: "9px", color: "var(--text-muted)", fontWeight: 700 }}>Seg</span>
               </div>
             </div>
@@ -244,33 +235,37 @@ export default function Home() {
           </div>
         )}
 
-        {/* 📅 BOTÃO PRESTÍGIO PARA VER PRÓXIMOS JOGOS */}
         <button 
-          onClick={() => setModalAberto(true)}
-          style={{ width: "100%", background: "transparent", border: "1px dashed var(--border-color)", padding: "10px", borderRadius: "12px", color: "var(--text-muted)", fontSize: "12px", fontWeight: 700, marginTop: "14px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", transition: "0.2s" }}
+          onClick={() => setModalAberto(true)} 
+          style={{ width: "100%", background: "transparent", border: "1px dashed var(--border-color)", padding: "10px", borderRadius: "12px", color: "var(--text-muted)", fontSize: "12px", fontWeight: 700, marginTop: "14px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
         >
           🗓️ Ver Agenda de Próximos Jogos
         </button>
       </section>
 
-      {/* 🚪 MODAL DA AGENDA FLUTUANTE (DENTRO DO TEMA ACTIVO) */}
+      {/* 🚪 MODAL AGENDA FLEXÍVEL (MANDO DINÂMICO INTERNO) */}
       {modalAberto && (
         <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "rgba(0,0,0,0.6)", zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", backdropFilter: "blur(4px)" }} onClick={() => setModalAberto(false)}>
-          <div style={{ background: "var(--bg-card)", width: "100%", maxWidth: "440px", borderRadius: "24px", padding: "20px", boxShadow: "var(--shadow-card)", border: "1px solid var(--border-color)" }} onClick={(e) => e.stopPropagation()}>
+          <div style={{ background: "var(--bg-card)", width: "100%", maxWidth: "440px", borderRadius: "24px", padding: "20px", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-card)" }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-color)", paddingBottom: "12px", marginBottom: "16px" }}>
               <strong style={{ fontSize: "16px", color: "var(--text-main)" }}>🗓️ Calendário de Confrontos</strong>
               <button onClick={() => setModalAberto(false)} style={{ background: "var(--bg-input)", border: "none", width: "28px", height: "28px", borderRadius: "50%", cursor: "pointer", color: "var(--text-main)", fontWeight: "bold" }}>✕</button>
             </div>
             
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "320px", overflowY: "auto", paddingRight: "4px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "320px", overflowY: "auto" }}>
               {proximosJogos.length === 0 ? (
                 <p style={{ fontSize: "13px", color: "var(--text-muted)", textAlign: "center", padding: "20px" }}>Nenhum jogo futuro mapeado no momento.</p>
               ) : (
                 proximosJogos.map((jogo, index) => (
-                  <div key={index} className="rank-card" style={{ padding: "12px", borderRadius: "14px", display: "flex", alignItems: "center", gap: "10px" }}>
-                    <img src={jogo.logoUrl} alt={jogo.adversario} style={{ width: "36px", height: "36px", objectFit: "contain" }} onError={(e) => { (e.target as HTMLImageElement).src = "https://s.sde.globo.com/media/organizations/default_60x60.png" }} />
+                  <div key={index} className="rank-card" style={{ padding: "12px", borderRadius: "14px", display: "flex", alignItems: "center", gap: "12px" }}>
+                    {/* Visualização de Escudos Lado a Lado do Mando da Agenda */}
+                    <div style={{ display: "flex", gap: "4px", alignItems: "center", flexShrink: 0 }}>
+                      <img src={jogo.logoCasaUrl} alt={jogo.timeCasa} style={{ width: "24px", height: "24px", objectFit: "contain" }} onError={(e) => { (e.target as HTMLImageElement).src = "https://s.sde.globo.com/media/organizations/default_60x60.png" }} />
+                      <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>x</span>
+                      <img src={jogo.logoForaUrl} alt={jogo.timeFora} style={{ width: "24px", height: "24px", objectFit: "contain" }} onError={(e) => { (e.target as HTMLImageElement).src = "https://s.sde.globo.com/media/organizations/default_60x60.png" }} />
+                    </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <h4 style={{ fontSize: "13px", fontWeight: 800, margin: 0, color: "var(--text-main)" }}>FLAMENGO x {jogo.adversario}</h4>
+                      <h4 style={{ fontSize: "13px", fontWeight: 800, margin: 0, color: "var(--text-main)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{jogo.timeCasa} x {jogo.timeFora}</h4>
                       <span style={{ fontSize: "11px", color: "var(--crf-red)", fontWeight: 700, display: "block" }}>🏆 {jogo.campeonato}</span>
                       <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 600 }}>🕒 {formatarDataBr(jogo.data)} • 📺 {jogo.transmissao}</span>
                     </div>
@@ -286,70 +281,43 @@ export default function Home() {
       <section id="como-participar" className="how-section" style={{ padding: "18px 16px", margin: "12px 0" }}>
         <div className="how-header" style={{ marginBottom: "14px" }}>
           <span className="section-kicker" style={{ fontSize: "12px" }}>⚽ Como Participar</span>
-          <h2 style={{ fontSize: "16px", fontWeight: 800 }}>Siga as etapas no Telegram</h2>
+          <h2 style={{ fontSize: "16px", fontWeight: 800, color: "var(--text-main)" }}>Siga as etapas no Telegram</h2>
         </div>
-
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <div className="rank-card" style={{ padding: "10px 14px", borderRadius: "14px" }}>
-            <div className="rank-left" style={{ gap: "10px" }}>
-              <div className="rank-position" style={{ width: "32px", height: "32px", borderRadius: "8px", color: "var(--crf-red)", fontWeight: 900, fontSize: "12px" }}>01</div>
-              <div style={{ minWidth: 0 }}>
-                <h3 style={{ fontSize: "13px", fontWeight: 700 }}>Aguarde a Escalação</h3>
-                <p style={{ fontSize: "11px", margin: "1px 0 0 0", lineHeight: "1.3" }}>O bot publica automaticamente o card oficial do bolão no canal <strong>@Flamengo77</strong>.</p>
+          {[
+            { num: "01", t: "Aguarde a Escalação", p: "O bot publica automaticamente o card oficial do bolão no canal @Flamengo77." },
+            { num: "02", t: "Comente seu Placar", p: "Envie seu palpite de placar exato direto nos comentários da postagem do jogo." },
+            { num: "03", t: "Validação por Reação", p: "O bot vai reagir com um joinha (👍) no seu comentário para confirmar sua participação activa." },
+            { num: "04", t: "Resultado e Ranking", p: "Após o fim do jogo, todos os acertos são reunidos, postados pelo bot e computados na tabela." }
+          ].map((item, i) => (
+            <div key={i} className="rank-card" style={{ padding: "10px 14px", borderRadius: "14px" }}>
+              <div className="rank-left" style={{ gap: "10px" }}>
+                <div className="rank-position" style={{ width: "32px", height: "32px", borderRadius: "8px", color: "var(--crf-red)", fontWeight: 900, fontSize: "12px" }}>{item.num}</div>
+                <div style={{ minWidth: 0 }}>
+                  <h3 style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)" }}>{item.t}</h3>
+                  <p style={{ fontSize: "11px", margin: "1px 0 0 0", lineHeight: "1.3", color: "var(--text-muted)" }}>{item.p}</p>
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="rank-card" style={{ padding: "10px 14px", borderRadius: "14px" }}>
-            <div className="rank-left" style={{ gap: "10px" }}>
-              <div className="rank-position" style={{ width: "32px", height: "32px", borderRadius: "8px", color: "var(--crf-red)", fontWeight: 900, fontSize: "12px" }}>02</div>
-              <div style={{ minWidth: 0 }}>
-                <h3 style={{ fontSize: "13px", fontWeight: 700 }}>Comente seu Placar</h3>
-                <p style={{ fontSize: "11px", margin: "1px 0 0 0", lineHeight: "1.3" }}>Envie seu palpite de placar exato direto nos comentários da postagem do jogo.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rank-card" style={{ padding: "10px 14px", borderRadius: "14px" }}>
-            <div className="rank-left" style={{ gap: "10px" }}>
-              <div className="rank-position" style={{ width: "32px", height: "32px", borderRadius: "8px", color: "var(--crf-red)", fontWeight: 900, fontSize: "12px" }}>03</div>
-              <div style={{ minWidth: 0 }}>
-                <h3 style={{ fontSize: "13px", fontWeight: 700 }}>Validação por Reação</h3>
-                <p style={{ fontSize: "11px", margin: "1px 0 0 0", lineHeight: "1.3" }}>O bot vai reagir com um <strong>joinha (👍)</strong> no seu comentário para confirmar sua participação ativa.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rank-card" style={{ padding: "10px 14px", borderRadius: "14px" }}>
-            <div className="rank-left" style={{ gap: "10px" }}>
-              <div className="rank-position" style={{ width: "32px", height: "32px", borderRadius: "8px", color: "var(--crf-red)", fontWeight: 900, fontSize: "12px" }}>04</div>
-              <div style={{ minWidth: 0 }}>
-                <h3 style={{ fontSize: "13px", fontWeight: 700 }}>Resultado e Ranking</h3>
-                <p style={{ fontSize: "11px", margin: "1px 0 0 0", lineHeight: "1.3" }}>Após o fim do jogo, todos os acertos são reunidos, postados pelo bot e computados na tabela.</p>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* 🏆 TABELA DE CLASSIFICAÇÃO */}
+      {/* 🏆 RANKING PRINCIPAL */}
       <section id="ranking" className="ranking-wrapper" style={{ marginTop: "12px" }}>
         <div className="ranking-heading" style={{ paddingLeft: "4px", marginBottom: "12px" }}>
           <div>
-            <h2 style={{ fontSize: "18px", fontWeight: 900 }}>Tabela Geral</h2>
-            <p style={{ fontSize: "12px" }}>Classificação de torcedores atualizada automaticamente.</p>
+            <h2 style={{ fontSize: "18px", fontWeight: 900, color: "var(--text-main)" }}>Tabela Geral</h2>
+            <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Classificação de torcedores atualizada automaticamente.</p>
           </div>
         </div>
-
         <RankingClient />
       </section>
 
-      {/* 👣 FOOTER */}
       <footer className="site-footer" style={{ marginTop: "24px", fontSize: "12px" }}>
         <span>Desenvolvido para a Nação Rubro-Negra</span>
         <strong>⚫🔴 FLAMENGO GOLS</strong>
       </footer>
-
     </main>
   )
 }
