@@ -20,7 +20,7 @@ export default function AdminPainel() {
   
   // 🏟️ ESTADOS DO CONFRONTO PRINCIPAL (CASA x FORA)
   const [timeCasa, setTimeCasa] = useState("FLAMENGO")
-  const [logoCasaUrl, setLogoCasaUrl] = useState("https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg")
+  const [logoCasaUrl, setLogoCasaUrl] = useState("https://s.sde.globo.com/media/organizations/2018/04/10/flamengo_60x60.png")
   const [timeFora, setTimeFora] = useState("PALMEIRAS")
   const [logoForaUrl, setLogoForaUrl] = useState("https://s.sde.globo.com/media/organizations/2014/04/14/palmeiras_60x60.png")
   
@@ -32,9 +32,9 @@ export default function AdminPainel() {
   // 🗓️ ESTADOS DA AGENDA DE JOGOS FUTUROS
   const [proximosJogos, setProximosJogos] = useState<JogoFuturo[]>([])
   
-  // Form de adição de jogo futuro com mando de campo flexível
+  // Form de adição de jogo futuro
   const [fTimeCasa, setFTimeCasa] = useState("FLAMENGO")
-  const [fLogoCasaUrl, setFLogoCasaUrl] = useState("https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg")
+  const [fLogoCasaUrl, setFLogoCasaUrl] = useState("https://s.sde.globo.com/media/organizations/2018/04/10/flamengo_60x60.png")
   const [fTimeFora, setFTimeFora] = useState("")
   const [fLogoForaUrl, setFLogoForaUrl] = useState("")
   
@@ -110,7 +110,7 @@ export default function AdminPainel() {
     setProximosJogos([...proximosJogos, novoJogo])
     
     setFTimeCasa("FLAMENGO")
-    setFLogoCasaUrl("https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_brazil.svg")
+    setFLogoCasaUrl("https://s.sde.globo.com/media/organizations/2018/04/10/flamengo_60x60.png")
     setFTimeFora("")
     setFLogoForaUrl("")
     setFData("")
@@ -123,213 +123,137 @@ export default function AdminPainel() {
     setProximosJogos(proximosJogos.filter((_, index) => index !== indexRemover))
   }
 
+  // 🚀 FUNÇÃO MASTER: PUXA O JOGO DA AGENDA DIRETO PARA O TOPO DO CRONÔMETRO
+  const promoverParaPrincipal = (index: number) => {
+    const jogo = proximosJogos[index]
+    
+    setTimeCasa(jogo.timeCasa)
+    setLogoCasaUrl(jogo.logoCasaUrl)
+    setTimeFora(jogo.timeFora)
+    setLogoForaUrl(jogo.logoForaUrl)
+    setCampeonato(jogo.campeonato)
+    setRodada(jogo.rodada)
+    setTransmissao(jogo.transmissao)
+    setDataJogo(jogo.data.slice(0, 16))
+
+    // Remove ele automaticamente da lista de espera (já que virou o principal)
+    setProximosJogos(proximosJogos.filter((_, i) => i !== index))
+    alert(`⚡ ${jogo.timeCasa} x ${jogo.timeFora} foi movido para o Bloco Principal. Clique no botão vermelho abaixo para salvar no servidor!`)
+  }
+
   const handleSalvarGeral = async () => {
     if (!timeCasa || !timeFora || !dataJogo) return alert("Os campos do jogo principal são obrigatórios!")
     setEnviando(true)
 
     const dataFormatada = dataJogo.length === 16 ? `${dataJogo}:00` : dataJogo
 
-    const payload = {
-      timeCasa: timeCasa.toUpperCase().trim(),
-      logoCasaUrl: logoCasaUrl.trim(),
-      timeFora: timeFora.toUpperCase().trim(),
-      logoForaUrl: logoForaUrl.trim(),
-      data: dataFormatada,
-      campeonato: campeonato.trim(),
-      rodada: rodada.trim(),
-      transmissao: transmissao.trim() || "A definir",
-      proximos: proximosJogos,
-      senha
-    }
-
     try {
       const res = await fetch("/api/proximo-jogo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ timeCasa, logoCasaUrl, timeFora, logoForaUrl, data: dataFormatada, campeonato, rodada, transmissao, proximos: proximosJogos, senha })
       })
-      const resultado = await res.json()
-      
-      if (resultado.ok) {
-        alert("🚨 Configurações gerais salvas e sincronizadas com sucesso!")
-      } else {
-        alert("Erro ao salvar dados: " + resultado.error)
-        if (res.status === 401) handleLogout()
-      }
+      if ((await res.json()).ok) alert("🚨 Configurações da fila atualizadas e salvas com sucesso!")
     } catch {
-      alert("Erro crítico de comunicação com o servidor.")
+      alert("Erro de comunicação com o servidor.")
     } finally {
       setEnviando(false)
     }
   }
 
-  if (loading) {
-    return (
-      <div style={{ color: "var(--text-main)", padding: "60px 20px", textAlign: "center", fontFamily: "inherit" }}>
-        <strong style={{ display: "block", fontSize: "16px" }}>Carregando Central do Administrador...</strong>
-      </div>
-    )
-  }
+  if (loading) return <div style={{ color: "var(--text-main)", padding: "60px 20px", textAlign: "center" }}>Carregando...</div>
 
   return (
-    <main style={{ maxWidth: "500px", margin: "0 auto", padding: "24px 12px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: "16px", backgroundColor: "var(--bg-main)" }}>
+    <main style={{ maxWidth: "500px", margin: "0 auto", padding: "20px 12px", minHeight: "100vh", display: "flex", flexDirection: "column", gap: "16px", backgroundColor: "var(--bg-main)" }}>
       
       {!isAutenticado ? (
-        <div style={{ background: "var(--bg-card)", borderRadius: "24px", padding: "28px 24px", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-card)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-            <span style={{ fontSize: "22px" }}>🔒</span>
-            <h1 style={{ fontSize: "20px", fontWeight: 900, margin: 0, color: "var(--text-main)" }}>ÁREA RESTRITA</h1>
-          </div>
-          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column" }}>
-            <label style={labelStyles}>Senha Administrador</label>
-            <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} style={inputStyles} placeholder="Chave mestre da API..." />
-            <button type="submit" style={{ width: "100%", background: "var(--text-main)", color: "var(--bg-card)", border: "none", padding: "14px", borderRadius: "12px", fontSize: "14px", fontWeight: 800, cursor: "pointer" }}>
-              Desbloquear Painel
-            </button>
+        <div style={{ background: "var(--bg-card)", borderRadius: "24px", padding: "24px", border: "1px solid var(--border-color)" }}>
+          <h1 style={{ fontSize: "20px", fontWeight: 900, color: "var(--text-main)", marginBottom: "12px" }}>🔒 ÁREA RESTRITA</h1>
+          <form onSubmit={handleLogin}>
+            <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} style={inputStyles} placeholder="Chave mestre..." />
+            <button type="submit" style={{ width: "100%", background: "var(--text-main)", color: "var(--bg-card)", border: "none", padding: "14px", borderRadius: "12px", fontWeight: 800 }}>Acessar</button>
           </form>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           
-          {/* TOPO LOGOUT */}
           <div style={{ background: "var(--bg-card)", borderRadius: "20px", padding: "14px 20px", border: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <strong style={{ fontSize: "16px", color: "var(--text-main)" }}>⚙️ Central Flamengo Gols</strong>
-            <button onClick={handleLogout} style={{ background: "rgba(204,20,20,0.08)", border: "none", color: "var(--crf-red)", fontSize: "12px", fontWeight: 800, padding: "6px 14px", borderRadius: "8px", cursor: "pointer" }}>Sair</button>
+            <strong style={{ fontSize: "15px", color: "var(--text-main)" }}>⚙️ Central Flamengo Gols</strong>
+            <button onClick={handleLogout} style={{ background: "rgba(204,20,20,0.08)", border: "none", color: "var(--crf-red)", fontSize: "12px", fontWeight: 800, padding: "6px 14px", borderRadius: "8px" }}>Sair</button>
           </div>
 
-          {/* SEÇÃO 1: CONFRONTO PRINCIPAL (DINÂMICO E RESPONSIVO) */}
-          <div style={{ background: "var(--bg-card)", borderRadius: "24px", padding: "24px", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-card)" }}>
-            <h2 style={{ fontSize: "15px", fontWeight: 900, margin: "0 0 16px 0", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px", color: "var(--text-main)" }}>⚔️ Jogo Principal do Cronômetro</h2>
-            
+          {/* JOGO ATIVO */}
+          <div style={{ background: "var(--bg-card)", borderRadius: "24px", padding: "20px", border: "1px solid var(--border-color)" }}>
+            <h2 style={{ fontSize: "14px", fontWeight: 900, marginBottom: "16px", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px", color: "var(--text-main)" }}>⚔️ Jogo Ativo no Cronômetro</h2>
             <div style={responsiveGridStyles}>
-              <div style={{ flex: "1 1 200px" }}>
-                <label style={labelStyles}>Time da Casa (Mandante)</label>
-                <input type="text" value={timeCasa} onChange={(e) => setTimeCasa(e.target.value)} style={inputStyles} placeholder="Ex: FLAMENGO" />
-              </div>
-              <div style={{ flex: "1 1 200px" }}>
-                <label style={labelStyles}>URL Logo Mandante</label>
-                <input type="text" value={logoCasaUrl} onChange={(e) => setLogoCasaUrl(e.target.value)} style={inputStyles} placeholder="https://..." />
-              </div>
+              <div style={{ flex: "1 1 200px" }}><label style={labelStyles}>Mandante (Casa)</label><input type="text" value={timeCasa} onChange={(e) => setTimeCasa(e.target.value)} style={inputStyles} /></div>
+              <div style={{ flex: "1 1 200px" }}><label style={labelStyles}>URL Logo Mandante</label><input type="text" value={logoCasaUrl} onChange={(e) => setLogoCasaUrl(e.target.value)} style={inputStyles} /></div>
             </div>
-
             <div style={responsiveGridStyles}>
-              <div style={{ flex: "1 1 200px" }}>
-                <label style={labelStyles}>Time de Fora (Visitante)</label>
-                <input type="text" value={timeFora} onChange={(e) => setTimeFora(e.target.value)} style={inputStyles} placeholder="Ex: PALMEIRAS" />
-              </div>
-              <div style={{ flex: "1 1 200px" }}>
-                <label style={labelStyles}>URL Logo Visitante</label>
-                <input type="text" value={logoForaUrl} onChange={(e) => setLogoForaUrl(e.target.value)} style={inputStyles} placeholder="https://..." />
-              </div>
+              <div style={{ flex: "1 1 200px" }}><label style={labelStyles}>Visitante (Fora)</label><input type="text" value={timeFora} onChange={(e) => setTimeFora(e.target.value)} style={inputStyles} /></div>
+              <div style={{ flex: "1 1 200px" }}><label style={labelStyles}>URL Logo Visitante</label><input type="text" value={logoForaUrl} onChange={(e) => setLogoForaUrl(e.target.value)} style={inputStyles} /></div>
             </div>
-
-            <label style={labelStyles}>Campeonato</label>
-            <input type="text" value={campeonato} onChange={(e) => setCampeonato(e.target.value)} style={inputStyles} placeholder="Ex: Campeonato Brasileiro" />
-
+            <label style={labelStyles}>Campeonato</label><input type="text" value={campeonato} onChange={(e) => setCampeonato(e.target.value)} style={inputStyles} />
             <div style={responsiveGridStyles}>
-              <div style={{ flex: "1 1 200px" }}>
-                <label style={labelStyles}>Rodada / Fase</label>
-                <input type="text" value={rodada} onChange={(e) => setRodada(e.target.value)} style={inputStyles} placeholder="Ex: 14ª" />
-              </div>
-              <div style={{ flex: "1 1 200px" }}>
-                <label style={labelStyles}>Transmissões (Canais)</label>
-                <input type="text" value={transmissao} onChange={(e) => setTransmissao(e.target.value)} style={inputStyles} placeholder="Ex: Globo, Premiere, ESPN" />
-              </div>
+              <div style={{ flex: "1 1 200px" }}><label style={labelStyles}>Rodada</label><input type="text" value={rodada} onChange={(e) => setRodada(e.target.value)} style={inputStyles} /></div>
+              <div style={{ flex: "1 1 200px" }}><label style={labelStyles}>Transmissão</label><input type="text" value={transmissao} onChange={(e) => setTransmissao(e.target.value)} style={inputStyles} /></div>
             </div>
-
-            <label style={labelStyles}>Data e Hora do Jogo</label>
-            <input type="datetime-local" value={dataJogo} onChange={(e) => setDataJogo(e.target.value)} style={{ ...inputStyles, colorScheme: isDarkMode ? "dark" : "light" }} />
+            <label style={labelStyles}>Data e Hora do Jogo</label><input type="datetime-local" value={dataJogo} onChange={(e) => setDataJogo(e.target.value)} style={{ ...inputStyles, colorScheme: isDarkMode ? "dark" : "light" }} />
           </div>
 
-          {/* SEÇÃO 2: ADICIONAR À AGENDA FUTURA (MANDO INDEPENDENTE RESOLVIDO) */}
-          <div style={{ background: "var(--bg-card)", borderRadius: "24px", padding: "24px", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-card)" }}>
-            <h2 style={{ fontSize: "15px", fontWeight: 900, margin: "0 0 16px 0", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px", color: "var(--text-main)" }}>🗓️ Adicionar Jogo à Agenda Futura</h2>
-            
-            <form onSubmit={adicionarJogoAgenda}>
-              <div style={responsiveGridStyles}>
-                <div style={{ flex: "1 1 200px" }}>
-                  <label style={labelStyles}>Mandante (Casa)</label>
-                  <input type="text" value={fTimeCasa} onChange={(e) => setFTimeCasa(e.target.value)} style={inputStyles} placeholder="Ex: FLAMENGO" />
-                </div>
-                <div style={{ flex: "1 1 200px" }}>
-                  <label style={labelStyles}>URL Logo Mandante</label>
-                  <input type="text" value={fLogoCasaUrl} onChange={(e) => setFLogoCasaUrl(e.target.value)} style={inputStyles} placeholder="https://..." />
-                </div>
-              </div>
-
-              <div style={responsiveGridStyles}>
-                <div style={{ flex: "1 1 200px" }}>
-                  <label style={labelStyles}>Visitante (Fora)</label>
-                  <input type="text" value={fTimeFora} onChange={(e) => setFTimeFora(e.target.value)} style={inputStyles} placeholder="Ex: BOTAFOGO" />
-                </div>
-                <div style={{ flex: "1 1 200px" }}>
-                  <label style={labelStyles}>URL Logo Visitante</label>
-                  <input type="text" value={fLogoForaUrl} onChange={(e) => setFLogoForaUrl(e.target.value)} style={inputStyles} placeholder="https://..." />
-                </div>
-              </div>
-
-              <label style={labelStyles}>Campeonato / Competição</label>
-              <input type="text" value={fCampeonato} onChange={(e) => setFCampeonato(e.target.value)} style={inputStyles} placeholder="Ex: Copa do Brasil" />
-
-              <div style={responsiveGridStyles}>
-                <div style={{ flex: "1 1 200px" }}>
-                  <label style={labelStyles}>Rodada / Turno</label>
-                  <input type="text" value={fRodada} onChange={(e) => setFRodada(e.target.value)} style={inputStyles} placeholder="Ex: Oitavas" />
-                </div>
-                <div style={{ flex: "1 1 200px" }}>
-                  <label style={labelStyles}>Canais de Transmissão</label>
-                  <input type="text" value={fTransmissao} onChange={(e) => setFTransmissao(e.target.value)} style={inputStyles} placeholder="Ex: Prime Video" />
-                </div>
-              </div>
-
-              <label style={labelStyles}>Data e Hora Futura</label>
-              <input type="datetime-local" value={fData} onChange={(e) => setFData(e.target.value)} style={{ ...inputStyles, colorScheme: isDarkMode ? "dark" : "light" }} />
-
-              <button type="submit" style={{ width: "100%", background: "var(--bg-input)", border: "1px solid var(--border-color)", color: "var(--text-main)", padding: "12px", borderRadius: "10px", fontSize: "12px", fontWeight: 800, cursor: "pointer" }}>
-                ➕ Inserir Jogo na Lista Abaixo
-              </button>
-            </form>
+          {/* ADICIONAR AGENDA */}
+          <div style={{ background: "var(--bg-card)", borderRadius: "24px", padding: "20px", border: "1px solid var(--border-color)" }}>
+            <h2 style={{ fontSize: "14px", fontWeight: 900, marginBottom: "16px", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px", color: "var(--text-main)" }}>🗓️ Adicionar Confronto Futuro na Agenda</h2>
+            <div style={responsiveGridStyles}>
+              <div style={{ flex: "1 1 200px" }}><label style={labelStyles}>Mandante (Casa)</label><input type="text" value={fTimeCasa} onChange={(e) => setFTimeCasa(e.target.value)} style={inputStyles} /></div>
+              <div style={{ flex: "1 1 200px" }}><label style={labelStyles}>URL Logo Mandante</label><input type="text" value={fLogoCasaUrl} onChange={(e) => setFLogoCasaUrl(e.target.value)} style={inputStyles} /></div>
+            </div>
+            <div style={responsiveGridStyles}>
+              <div style={{ flex: "1 1 200px" }}><label style={labelStyles}>Visitante (Fora)</label><input type="text" value={fTimeFora} onChange={(e) => setFTimeFora(e.target.value)} style={inputStyles} /></div>
+              <div style={{ flex: "1 1 200px" }}><label style={labelStyles}>URL Logo Visitante</label><input type="text" value={fLogoForaUrl} onChange={(e) => setFLogoForaUrl(e.target.value)} style={inputStyles} /></div>
+            </div>
+            <label style={labelStyles}>Campeonato</label><input type="text" value={fCampeonato} onChange={(e) => setFCampeonato(e.target.value)} style={inputStyles} />
+            <div style={responsiveGridStyles}>
+              <div style={{ flex: "1 1 200px" }}><label style={labelStyles}>Rodada</label><input type="text" value={fRodada} onChange={(e) => setFRodada(e.target.value)} style={inputStyles} /></div>
+              <div style={{ flex: "1 1 200px" }}><label style={labelStyles}>Transmissão</label><input type="text" value={fTransmissao} onChange={(e) => setFTransmissao(e.target.value)} style={inputStyles} /></div>
+            </div>
+            <label style={labelStyles}>Data Futura</label><input type="datetime-local" value={fData} onChange={(e) => setFData(e.target.value)} style={{ ...inputStyles, colorScheme: isDarkMode ? "dark" : "light" }} />
+            <button onClick={adicionarJogoAgenda} style={{ width: "100%", background: "var(--bg-input)", border: "1px solid var(--border-color)", color: "var(--text-main)", padding: "12px", borderRadius: "10px", fontWeight: 850, fontSize: "12px", cursor: "pointer" }}>➕ Inserir Jogo na Agenda de Espera</button>
           </div>
 
-          {/* SEÇÃO 3: LISTAGEM DA AGENDA GRAVADA */}
-          <div style={{ background: "var(--bg-card)", borderRadius: "24px", padding: "24px", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-card)" }}>
-            <h2 style={{ fontSize: "15px", fontWeight: 900, margin: "0 0 12px 0", color: "var(--text-main)" }}>📋 Agenda de Jogos Gravada ({proximosJogos.length})</h2>
-            <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: "0 0 16px 0" }}>Jogos que aparecerão no modal da Home. Remova os que já passaram.</p>
-            
+          {/* JOGOS SALVOS (COM BOTÃO DE PROMOVER ATIVO) */}
+          <div style={{ background: "var(--bg-card)", borderRadius: "24px", padding: "20px", border: "1px solid var(--border-color)" }}>
+            <h2 style={{ fontSize: "14px", fontWeight: 900, marginBottom: "12px", color: "var(--text-main)" }}>📋 Fila de Espera Atual ({proximosJogos.length} de 5)</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {proximosJogos.length === 0 ? (
-                <div style={{ padding: "14px", border: "1px dashed var(--border-color)", borderRadius: "12px", textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>Nenhum jogo na agenda futura.</div>
+                <div style={{ padding: "14px", border: "1px dashed var(--border-color)", borderRadius: "12px", textAlign: "center", fontSize: "12px", color: "var(--text-muted)" }}>Nenhum jogo futuro mapeado.</div>
               ) : (
-                proximosJogos.map((jogo, index) => (
-                  <div key={index} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-input)", padding: "10px 12px", borderRadius: "12px", border: "1px solid var(--border-color)" }}>
+                proximosJogos.map((jogo, idx) => (
+                  <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--bg-input)", padding: "10px 12px", borderRadius: "12px", border: "1px solid var(--border-color)", gap: "10px" }}>
                     <div style={{ flex: 1, minWidth: 0, fontSize: "12px" }}>
-                      <strong style={{ color: "var(--text-main)" }}>{jogo.timeCasa} x {jogo.timeFora}</strong>
-                      <span style={{ display: "block", color: "var(--text-muted)", fontSize: "11px", marginTop: "2px" }}>{jogo.campeonato} • {jogo.transmissao}</span>
+                      <strong style={{ color: "var(--text-main)", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{jogo.timeCasa} x {jogo.timeFora}</strong>
+                      <span style={{ display: "block", color: "var(--text-muted)", fontSize: "11px", marginTop: "2px" }}>{jogo.campeonato}</span>
                     </div>
-                    <button onClick={() => removerJogoAgenda(index)} style={{ background: "transparent", border: "none", color: "var(--crf-red)", fontWeight: 800, fontSize: "11px", cursor: "pointer", padding: "4px 8px" }}>
-                      Remover
-                    </button>
+                    <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                      {/* ✨ BOTÃO DE ATALHO DE FLUXO ROLANTE */}
+                      <button onClick={() => promoverParaPrincipal(idx)} style={{ background: "rgba(46,125,50,0.08)", border: "none", color: "#2e7d32", fontWeight: 800, fontSize: "11px", cursor: "pointer", padding: "6px 10px", borderRadius: "6px" }}>Promover</button>
+                      <button onClick={() => removerJogoAgenda(idx)} style={{ background: "transparent", border: "none", color: "var(--crf-red)", fontWeight: 800, fontSize: "11px", cursor: "pointer", padding: "6px" }}>Remover</button>
+                    </div>
                   </div>
                 ))
               )}
             </div>
           </div>
 
-          {/* 🚀 BOTÃO MASTER SALVAR GERAL */}
-          <button 
-            onClick={handleSalvarGeral}
-            disabled={enviando}
-            style={{ width: "100%", background: "linear-gradient(135deg, var(--crf-red), #990f0f)", color: "#fff", border: "none", padding: "16px", borderRadius: "14px", fontSize: "14px", fontWeight: 900, cursor: "pointer", boxShadow: "0 6px 20px rgba(204, 20, 20, 0.25)" }}
-          >
-            {enviando ? "Gravando Dados Globais..." : "💾 GRAVAR CONFIGURAÇÕES DO BOLÃO"}
+          <button onClick={handleSalvarGeral} disabled={enviando} style={{ width: "100%", background: "linear-gradient(135deg, #cc1414, #990f0f)", color: "#fff", border: "none", padding: "16px", borderRadius: "14px", fontSize: "13px", fontWeight: 900, boxShadow: "0 6px 20px rgba(204, 20, 20, 0.25)", cursor: "pointer" }}>
+            {enviando ? "Sincronizando Fila..." : "💾 GRAVAR CONFIGURAÇÕES DO BOLÃO"}
           </button>
-
         </div>
       )}
     </main>
   )
 }
 
-const labelStyles: React.CSSProperties = { fontSize: "11px", color: "var(--text-muted)", fontWeight: 800, letterSpacing: "0.3px", textTransform: "uppercase" }
-const inputStyles: React.CSSProperties = { width: "100%", padding: "12px 14px", background: "var(--bg-input)", border: "1px solid var(--border-color)", color: "var(--text-main)", borderRadius: "10px", fontSize: "14px", boxSizing: "border-box", marginTop: "4px", marginBottom: "14px", outline: "none", fontFamily: "inherit", fontWeight: 500 }
+const labelStyles: React.CSSProperties = { fontSize: "10px", color: "var(--text-muted)", fontWeight: 800, textTransform: "uppercase" }
+const inputStyles: React.CSSProperties = { width: "100%", padding: "11px 14px", background: "var(--bg-input)", border: "1px solid var(--border-color)", color: "var(--text-main)", borderRadius: "10px", fontSize: "14px", boxSizing: "border-box", marginTop: "4px", marginBottom: "12px", outline: "none", fontFamily: "inherit" }
 const responsiveGridStyles: React.CSSProperties = { display: "flex", flexWrap: "wrap", gap: "0 10px" }
