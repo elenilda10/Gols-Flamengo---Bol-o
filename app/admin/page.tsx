@@ -15,21 +15,17 @@ export default function AdminPainel() {
   const [isDarkMode, setIsDarkMode] = useState(false)
 
   useEffect(() => {
-    // 🔑 Verifica se o administrador já fez login nesta sessão do navegador
     const tokenSalvo = sessionStorage.getItem("admin_token")
     if (tokenSalvo) {
       setSenha(tokenSalvo)
       setIsAutenticado(true)
     }
 
-    // Puxa as configurações atuais salvas no backend
     fetch("/api/proximo-jogo")
       .then((res) => res.json())
       .then((data) => {
         setAdversario(data.adversario || "")
         setLogoUrl(data.logoUrl || "")
-        
-        // Formata a data recebida para ser compatível com o input datetime-local (YYYY-MM-DDTHH:MM)
         if (data.data) {
           setDataJogo(data.data.slice(0, 16)) 
         }
@@ -37,7 +33,6 @@ export default function AdminPainel() {
       })
       .catch(() => setLoading(false))
 
-    // Sincroniza as cores base com o tema ativo do usuário
     const savedTheme = localStorage.getItem("theme")
     if (savedTheme === "dark") {
       setIsDarkMode(true)
@@ -48,8 +43,6 @@ export default function AdminPainel() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
     if (!senha.trim()) return alert("Por favor, digite a senha de acesso!")
-    
-    // Grava o token na sessão para persistir o login enquanto a aba estiver aberta
     sessionStorage.setItem("admin_token", senha)
     setIsAutenticado(true)
   }
@@ -65,7 +58,6 @@ export default function AdminPainel() {
     if (!adversario || !logoUrl || !dataJogo) return alert("Preencha todos os campos antes de salvar!")
     setEnviando(true)
 
-    // Garante que a string final enviada inclua os segundos (:00) para manter o padrão ISO do cronômetro
     const dataFormatada = dataJogo.length === 16 ? `${dataJogo}:00` : dataJogo
 
     try {
@@ -96,16 +88,15 @@ export default function AdminPainel() {
 
   if (loading) {
     return (
-      <div style={{ color: "var(--text-main)", padding: "60px 20px", textAlign: "center", fontFamily: "inherit" }}>
+      <div style={{ color: "var(--text-main)", padding: "60px 20px", textAlign: "center" }}>
         <strong style={{ display: "block", fontSize: "16px" }}>Carregando Painel do Controlador...</strong>
       </div>
     )
   }
 
   return (
-    <main style={{ maxWidth: "460px", margin: "0 auto", padding: "40px 14px", minHeight: "100vh", display: "flex", flexDirection: "column", justifyConten: "center" }}>
+    <main style={{ maxWidth: "460px", margin: "0 auto", padding: "40px 14px", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
       
-      {/* 🔐 TELA DE LOCKOUT (SE NÃO ESTIVER AUTENTICADO) */}
       {!isAutenticado ? (
         <div style={{ background: "var(--bg-card)", borderRadius: "24px", padding: "28px 24px", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-card)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
@@ -125,15 +116,14 @@ export default function AdminPainel() {
               style={inputStyles} 
               placeholder="Chave mestre da API..." 
             />
-            <button type="submit" style={{ width: "100%", background: "var(--text-main)", color: "var(--bg-card)", border: "none", padding: "14px", borderRadius: "12px", fontSize: "14px", fontWeight: 800, cursor: "pointer", transition: "all 0.2s" }}>
+            <button type="submit" style={{ width: "100%", background: "var(--text-main)", color: "var(--bg-card)", border: "none", padding: "14px", borderRadius: "12px", fontSize: "14px", fontWeight: 800, cursor: "pointer" }}>
               Desbloquear Painel
             </button>
           </form>
         </div>
       ) : (
-        
-        {/* 🏟️ MANAGER FORM (EXIBIDO APÓS AUTENTICAÇÃO) */}
         <div style={{ background: "var(--bg-card)", borderRadius: "24px", padding: "28px 24px", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-card)" }}>
+          {/* 🏟️ MANAGER FORM (EXIBIDO APÓS AUTENTICAÇÃO) */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", borderBottom: "1px solid var(--border-color)", paddingBottom: "14px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <span style={{ fontSize: "20px" }}>🏟️</span>
@@ -152,7 +142,6 @@ export default function AdminPainel() {
             <input type="text" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} style={inputStyles} placeholder="https://s.sde.globo.com/media/..." />
 
             <label style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 800, letterSpacing: "0.3px" }}>DATA E HORA DO CONFRONTO</label>
-            {/* 📅 CALENDÁRIO COMPATÍVEL COM MÓVEIS */}
             <input 
               type="datetime-local" 
               value={dataJogo} 
@@ -160,7 +149,7 @@ export default function AdminPainel() {
               style={{ ...inputStyles, colorScheme: isDarkMode ? "dark" : "light" }} 
             />
 
-            <button type="submit" disabled={enviando} style={{ width: "100%", background: "linear-gradient(135deg, var(--crf-red), #990f0f)", color: "#fff", border: "none", padding: "15px", borderRadius: "12px", fontSize: "14px", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 14px rgba(204, 20, 20, 0.2)", marginTop: "10px", transition: "all 0.2s" }}>
+            <button type="submit" disabled={enviando} style={{ width: "100%", background: "linear-gradient(135deg, var(--crf-red), #990f0f)", color: "#fff", border: "none", padding: "15px", borderRadius: "12px", fontSize: "14px", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 14px rgba(204, 20, 20, 0.2)", marginTop: "10px" }}>
               {enviando ? "Sincronizando Banco de Dados..." : "🚀 Atualizar Confronto Oficial"}
             </button>
           </form>
