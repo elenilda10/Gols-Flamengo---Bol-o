@@ -322,9 +322,9 @@ export default function Home() {
         backdropFilter: "blur(10px)",
         boxShadow: "0 -4px 20px rgba(0,0,0,0.4)"
       }}>
-        {/* 1. PALPITAR (Com Notificação Vermelha Ativa) */}
+        {/* 1. PALPITAR (Com Notificação Vermelha Ativa - CORRIGIDO JUSTIFYCONTENT) */}
         <a href="https://t.me/flamengogolsbot" target="_blank" rel="noreferrer" style={{ display: "flex", flexDirection: "column", alignItems: "center", textDecoration: "none", color: "inherit", position: "relative" }}>
-          <div style={{ padding: "4px 20px", borderRadius: "16px", background: "rgba(204, 20, 20, 0.15)", display: "flex", alignItems: "center", justifyCenter: "center", marginBottom: "4px" }}>
+          <div style={{ padding: "4px 20px", borderRadius: "16px", background: "rgba(204, 20, 20, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "4px" }}>
             <span style={{ fontSize: "20px" }}>🤖</span>
             <span style={{ position: "absolute", top: "-2px", right: "22%", background: "var(--crf-red, #cc1414)", color: "#fff", fontSize: "9px", fontWeight: 900, borderRadius: "10px", padding: "1px 5px", minWidth: "18px", textAlign: "center", border: "2px solid var(--bg-card, #121212)" }}>
               ON
