@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server"
+import { createClient } from "@vercel/kv" // 🚀 Mudamos para a conexão manual blindada
 
-let dadosConfigBolao = {
+// Procura e conecta no banco usando qualquer variação de nome que a Vercel tenha gerado
+const kv = createClient({
+  url: process.env.KV_REST_API_URL || process.env.KV_URL || process.env.UPSTASH_REDIS_REST_URL || "",
+  token: process.env.KV_REST_API_TOKEN || process.env.KV_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || ""
+})
+
+const dadosPadrao = {
   timeCasa: "FLAMENGO",
   logoCasaUrl: "https://s.sde.globo.com/media/organizations/2018/04/10/flamengo_60x60.png",
   timeFora: "PALMEIRAS",
@@ -13,7 +20,12 @@ let dadosConfigBolao = {
 }
 
 export async function GET() {
-  return NextResponse.json(dadosConfigBolao)
+  try {
+    const dadosSalvos = await kv.get("dados_config_bolao")
+    return NextResponse.json(dadosSalvos || dadosPadrao)
+  } catch {
+    return NextResponse.json(dadosPadrao)
+  }
 }
 
 export async function POST(request: Request) {
@@ -22,21 +34,19 @@ export async function POST(request: Request) {
     const senhaInformada = body.senha
     const SENHA_MESTRE = process.env.ADMIN_PASSWORD
 
-    // 🔒 BARREIRA DE SEGURANÇA MESTRE
     if (!SENHA_MESTRE || !senhaInformada || senhaInformada !== SENHA_MESTRE) {
       return NextResponse.json({ ok: false, error: "Acesso negado. Credencial mestre inválida!" }, { status: 401 })
     }
 
-    // ✨ NOVA TRAVA DE LOGIN: Se o painel estiver apenas validando a senha no acesso, responde aqui
     if (body.validarAcesso) {
       return NextResponse.json({ ok: true, autorizado: true })
     }
 
     if (!body.timeCasa || !body.timeFora || !body.data) {
-      return NextResponse.json({ ok: false, error: "Campos obrigatórios do jogo principal ausentes." }, { status: 400 })
+      return NextResponse.json({ ok: false, error: "Campos obrigatórios ausentes." }, { status: 400 })
     }
     
-    dadosConfigBolao = {
+    const novosDados = {
       timeCasa: body.timeCasa.toUpperCase().trim(),
       logoCasaUrl: body.logoCasaUrl.trim(),
       timeFora: body.timeFora.toUpperCase().trim(),
@@ -48,6 +58,7 @@ export async function POST(request: Request) {
       proximos: Array.isArray(body.proximos) ? body.proximos : []
     }
     
+    await kv.set("dados_config_bolao", novosDados)
     return NextResponse.json({ ok: true })
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e.message }, { status: 500 })
