@@ -9,6 +9,7 @@ type RankingItem = {
   nome?: string
   name?: string
   photo_file_id?: string
+  photo_url?: string
 }
 
 type RankingResponse = {
@@ -126,34 +127,54 @@ export async function GET(request: NextRequest) {
   const uid = request.nextUrl.searchParams.get("uid")
   const directFileId = request.nextUrl.searchParams.get("file_id")
 
-  if (!token) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: "TELEGRAM_BOT_TOKEN não configurado na Vercel",
-      },
-      { status: 500 }
-    )
-  }
-
   let fileId = directFileId || ""
+  let photoUrl = ""
   let name = "Torcedor"
 
-  if (!fileId && uid) {
+  // 1. Busca no ranking se tiver UID fornecido
+  if (uid) {
     const ranking = await getRanking()
 
     const player = ranking.find((item) => {
       return getUserId(item) === String(uid)
     })
 
-    fileId = player?.photo_file_id || ""
-    name = getUserName(player)
+    if (player) {
+      fileId = player.photo_file_id || ""
+      photoUrl = player.photo_url || ""
+      name = getUserName(player)
+    }
   }
 
-  if (!fileId) {
+  // 2. Se o Worker já nos mandou uma URL pronta (http/https), faz o proxy direto da imagem
+  if (photoUrl && photoUrl.startsWith("http")) {
+    try {
+      const imgRes = await fetch(photoUrl, { cache: "no-store" })
+      if (imgRes.ok) {
+        const imageBuffer = await imgRes.arrayBuffer()
+        const contentType = imgRes.headers.get("content-type") || "image/jpeg"
+
+        return new NextResponse(imageBuffer, {
+          status: 200,
+          headers: {
+            "Content-Type": contentType,
+            "Content-Disposition": "inline; filename=avatar.jpg",
+            "Cache-Control": "public, max-age=86400",
+            "X-Robots-Tag": "noindex, nofollow, noarchive",
+          },
+        })
+      }
+    } catch {
+      // Se falhar o proxy por URL, tenta seguir para a busca por FileId abaixo
+    }
+  }
+
+  // 3. Se não tiver FileId e nem Token do Telegram, devolve o SVG de iniciais
+  if (!fileId || !token) {
     return svgResponse(name)
   }
 
+  // 4. Fluxo normal via file_id do Telegram
   try {
     const getFileUrl =
       "https://api.telegram.org/bot" +
@@ -196,7 +217,7 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": contentType,
         "Content-Disposition": "inline; filename=avatar.jpg",
-        "Cache-Control": "private, no-store, max-age=0",
+        "Cache-Control": "public, max-age=86400",
         "X-Robots-Tag": "noindex, nofollow, noarchive",
       },
     })
