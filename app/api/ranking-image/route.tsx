@@ -3,22 +3,18 @@ import { ImageResponse } from "next/og"
 export const runtime = "edge"
 
 type RankingItem = {
-  nome: string
-  pontos: number
+  id?: string
+  uid?: string
+  nome?: string
+  name?: string
+  pontos?: number
 }
 
-const ranking: RankingItem[] = [
-  { nome: "1514417...", pontos: 3995 },
-  { nome: "Tartaru...", pontos: 1167 },
-  { nome: "B9", pontos: 328 },
-  { nome: "Reginal...", pontos: 220 },
-  { nome: "kau", pontos: 188 },
-  { nome: "Eduardo", pontos: 160 },
-  { nome: "Masa", pontos: 153 },
-  { nome: "Kaiquex", pontos: 138 },
-  { nome: "Dimitri", pontos: 110 },
-  { nome: "Glauber", pontos: 100 },
-]
+type RankingResponse = {
+  ok?: boolean
+  ranking?: RankingItem[]
+  data?: RankingItem[] | { ranking?: RankingItem[] }
+}
 
 function limitarNome(nome: string, max = 16) {
   if (!nome) return "Torcedor"
@@ -26,12 +22,48 @@ function limitarNome(nome: string, max = 16) {
   return nome.slice(0, max - 3) + "..."
 }
 
+async function getRankingDinamico(): Promise<RankingItem[]> {
+  const apiUrl = process.env.RANKING_API_URL
+
+  if (!apiUrl) return []
+
+  try {
+    const response = await fetch(apiUrl, { cache: "no-store" })
+    if (!response.ok) return []
+
+    const data: RankingResponse | RankingItem[] = await response.json()
+
+    let lista: RankingItem[] = []
+    if (Array.isArray(data)) lista = data
+    else if (Array.isArray(data.ranking)) lista = data.ranking
+    else if (Array.isArray(data.data)) lista = data.data
+    else if (data.data && !Array.isArray(data.data) && Array.isArray(data.data.ranking)) {
+      lista = data.data.ranking
+    }
+
+    return lista.map((item) => ({
+      nome: item.nome || item.name || "Torcedor",
+      pontos: Number(item.pontos) || 0,
+    }))
+  } catch {
+    return []
+  }
+}
+
 export async function GET() {
+  const dadosApi = await getRankingDinamico()
+
+  // Se a API falhar ou estiver vazia, exibe dados padrão de fallback
+  const ranking = dadosApi.length > 0 ? dadosApi : [
+    { nome: "Torcedor 1", pontos: 10 },
+    { nome: "Torcedor 2", pontos: 5 },
+  ]
+
   const top10 = [...ranking]
-    .sort((a, b) => b.pontos - a.pontos)
+    .sort((a, b) => (b.pontos || 0) - (a.pontos || 0))
     .slice(0, 10)
 
-  const maxPontos = Math.max(...top10.map((item) => item.pontos), 1)
+  const maxPontos = Math.max(...top10.map((item) => item.pontos || 0), 1)
 
   return new ImageResponse(
     (
@@ -46,36 +78,36 @@ export async function GET() {
           padding: "70px 64px",
           color: "#ffffff",
           fontFamily: "Arial, sans-serif",
-          background:
-            "linear-gradient(180deg, #021814 0%, #03261f 45%, #071d33 100%)",
+          background: "linear-gradient(180deg, #09090b 0%, #170505 45%, #000000 100%)",
         }}
       >
-        {/* grid de fundo */}
+        {/* Grid de fundo sutil */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px)",
+              "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
             backgroundSize: "44px 44px",
-            opacity: 0.28,
+            opacity: 0.3,
           }}
         />
 
-        {/* brilhos */}
+        {/* Brilho Vermelho Mengão (Canto Superior Direito) */}
         <div
           style={{
             position: "absolute",
-            width: "620px",
-            height: "620px",
+            width: "650px",
+            height: "650px",
             right: "-160px",
             top: "-160px",
             borderRadius: "999px",
-            background: "rgba(244, 208, 63, 0.12)",
-            filter: "blur(90px)",
+            background: "rgba(220, 38, 38, 0.18)",
+            filter: "blur(100px)",
           }}
         />
 
+        {/* Brilho Escuro (Canto Inferior Esquerdo) */}
         <div
           style={{
             position: "absolute",
@@ -84,12 +116,12 @@ export async function GET() {
             left: "-170px",
             bottom: "-170px",
             borderRadius: "999px",
-            background: "rgba(34, 197, 94, 0.12)",
+            background: "rgba(185, 28, 28, 0.12)",
             filter: "blur(90px)",
           }}
         />
 
-        {/* conteúdo */}
+        {/* Conteúdo Principal */}
         <div
           style={{
             display: "flex",
@@ -100,7 +132,7 @@ export async function GET() {
             height: "100%",
           }}
         >
-          {/* topo */}
+          {/* Topo do Banner */}
           <div
             style={{
               display: "flex",
@@ -114,11 +146,11 @@ export async function GET() {
                 alignItems: "center",
                 fontSize: "30px",
                 fontWeight: 900,
-                color: "#f4d03f",
+                color: "#ef4444",
                 marginBottom: "22px",
               }}
             >
-              📊 Classificação geral
+              📊 Classificação Geral
             </div>
 
             <div
@@ -131,7 +163,7 @@ export async function GET() {
                 marginBottom: "22px",
               }}
             >
-              Ranking do Bolão da Seleção
+              Ranking do Bolão do Mengão ❤️🖤
             </div>
 
             <div
@@ -143,12 +175,11 @@ export async function GET() {
                 maxWidth: "1000px",
               }}
             >
-              Top 10 torcedores com mais pontos no bolão. Cada acerto soma
-              pontos e atualiza a classificação geral da torcida brasileira.
+              Top 10 torcedores com mais pontos no bolão oficial. Cada acerto de placar soma pontos na tabela rubro-negra!
             </div>
           </div>
 
-          {/* card */}
+          {/* Card Central do Ranking */}
           <div
             style={{
               display: "flex",
@@ -157,13 +188,13 @@ export async function GET() {
               width: "100%",
               padding: "44px 42px 42px 42px",
               borderRadius: "34px",
-              background: "rgba(3, 35, 30, 0.86)",
-              border: "2px solid rgba(244, 208, 63, 0.26)",
+              background: "rgba(24, 24, 27, 0.88)",
+              border: "2px solid rgba(239, 68, 68, 0.3)",
               boxShadow:
-                "0 24px 60px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.06)",
+                "0 24px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
-            {/* cabeçalho do card */}
+            {/* Cabeçalho do Card */}
             <div
               style={{
                 display: "flex",
@@ -180,7 +211,7 @@ export async function GET() {
                   color: "#ffffff",
                 }}
               >
-                🏆 Top 10 do ranking
+                🏆 Top 10 Rubro-Negro
               </div>
 
               <div
@@ -191,16 +222,16 @@ export async function GET() {
                   borderRadius: "999px",
                   fontSize: "23px",
                   fontWeight: 800,
-                  background: "rgba(34, 197, 94, 0.18)",
-                  border: "1px solid rgba(34, 197, 94, 0.42)",
-                  color: "#dfffe8",
+                  background: "rgba(220, 38, 38, 0.18)",
+                  border: "1px solid rgba(220, 38, 38, 0.42)",
+                  color: "#fca5a5",
                 }}
               >
                 ● Ao vivo
               </div>
             </div>
 
-            {/* lista */}
+            {/* Lista dos 10 Melhores */}
             <div
               style={{
                 display: "flex",
@@ -212,7 +243,7 @@ export async function GET() {
               {top10.map((item, index) => {
                 const porcentagem = Math.max(
                   12,
-                  Math.round((item.pontos / maxPontos) * 100)
+                  Math.round(((item.pontos || 0) / maxPontos) * 100)
                 )
 
                 const medalha =
@@ -226,7 +257,7 @@ export async function GET() {
 
                 return (
                   <div
-                    key={item.nome + index}
+                    key={(item.nome || "") + index}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -246,7 +277,7 @@ export async function GET() {
                         justifyContent: "center",
                         fontSize: index < 3 ? "27px" : "28px",
                         fontWeight: 900,
-                        color: "#f4d03f",
+                        color: index === 0 ? "#f4d03f" : index === 1 ? "#e2e8f0" : index === 2 ? "#b45309" : "#ef4444",
                       }}
                     >
                       {medalha}
@@ -254,7 +285,7 @@ export async function GET() {
 
                     <div
                       style={{
-                        width: "200px",
+                        width: "220px",
                         display: "flex",
                         alignItems: "center",
                         fontSize: "28px",
@@ -262,9 +293,10 @@ export async function GET() {
                         color: "#ffffff",
                       }}
                     >
-                      {limitarNome(item.nome)}
+                      {limitarNome(item.nome || "Torcedor")}
                     </div>
 
+                    {/* Barra de Progresso com Gradient Vermelho Mengão */}
                     <div
                       style={{
                         flex: 1,
@@ -288,13 +320,13 @@ export async function GET() {
                           paddingRight: porcentagem > 22 ? "0px" : "14px",
                           borderRadius: "999px",
                           background:
-                            "linear-gradient(90deg, #d4af37 0%, #f4d03f 100%)",
-                          color: "#103b2e",
+                            "linear-gradient(90deg, #b91c1c 0%, #ef4444 100%)",
+                          color: "#ffffff",
                           fontSize: "25px",
                           fontWeight: 900,
                         }}
                       >
-                        {item.pontos}
+                        {item.pontos} pts
                       </div>
                     </div>
                   </div>
@@ -302,7 +334,7 @@ export async function GET() {
               })}
             </div>
 
-            {/* rodapé */}
+            {/* Rodapé */}
             <div
               style={{
                 display: "flex",
@@ -316,13 +348,13 @@ export async function GET() {
               }}
             >
               <div style={{ display: "flex" }}>
-                🇧🇷 Gols Brasil | Bolão da Seleção
+                🔴⚫ @FlamengoGolsBot | Canal @Flamengo77
               </div>
 
               <div
                 style={{
                   display: "flex",
-                  color: "#f4d03f",
+                  color: "#ef4444",
                   fontWeight: 900,
                 }}
               >
