@@ -37,18 +37,6 @@ function getInitials(name: string) {
   return initials || "F"
 }
 
-function getContentType(filePath: string) {
-  const path = filePath.toLowerCase()
-
-  if (path.endsWith(".png")) return "image/png"
-  if (path.endsWith(".webp")) return "image/webp"
-  if (path.endsWith(".gif")) return "image/gif"
-  if (path.endsWith(".jpg")) return "image/jpeg"
-  if (path.endsWith(".jpeg")) return "image/jpeg"
-
-  return "image/jpeg"
-}
-
 function fallbackSvg(name: string) {
   const initials = getInitials(name)
 
@@ -122,7 +110,8 @@ async function getRanking(): Promise<RankingItem[]> {
 }
 
 export async function GET(request: NextRequest) {
-  const token = process.env.TELEGRAM_BOT_TOKEN
+  // Suporta tanto TELEGRAM_TOKEN quanto TELEGRAM_BOT_TOKEN na Vercel
+  const token = process.env.TELEGRAM_TOKEN || process.env.TELEGRAM_BOT_TOKEN
 
   const uid = request.nextUrl.searchParams.get("uid")
   const directFileId = request.nextUrl.searchParams.get("file_id")
@@ -146,45 +135,26 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // 2. Se o Worker já nos mandou uma URL pronta (http/https), faz o proxy direto da imagem
-  if (photoUrl && photoUrl.startsWith("http")) {
-    try {
-      const imgRes = await fetch(photoUrl, { cache: "no-store" })
-      if (imgRes.ok) {
-        const imageBuffer = await imgRes.arrayBuffer()
-        const contentType = imgRes.headers.get("content-type") || "image/jpeg"
-
-        return new NextResponse(imageBuffer, {
-          status: 200,
-          headers: {
-            "Content-Type": contentType,
-            "Content-Disposition": "inline; filename=avatar.jpg",
-            "Cache-Control": "public, max-age=86400",
-            "X-Robots-Tag": "noindex, nofollow, noarchive",
-          },
-        })
-      }
-    } catch {
-      // Se falhar o proxy por URL, tenta seguir para a busca por FileId abaixo
-    }
+  // 2. Se a URL salva no KV for pública e válida, redireciona diretamente (Instantâneo)
+  if (photoUrl && photoUrl.startsWith("http") && !photoUrl.includes("dicebear")) {
+    return NextResponse.redirect(photoUrl, {
+      status: 302,
+      headers: {
+        "Cache-Control": "public, max-age=86400",
+      },
+    })
   }
 
-  // 3. Se não tiver FileId e nem Token do Telegram, devolve o SVG de iniciais
+  // 3. Se não houver FileId ou Token, devolve o SVG de iniciais
   if (!fileId || !token) {
     return svgResponse(name)
   }
 
-  // 4. Fluxo normal via file_id do Telegram
+  // 4. Fluxo de renovação via Telegram Bot API
   try {
-    const getFileUrl =
-      "https://api.telegram.org/bot" +
-      token +
-      "/getFile?file_id=" +
-      encodeURIComponent(fileId)
+    const getFileUrl = `https://api.telegram.org/bot${token}/getFile?file_id=${encodeURIComponent(fileId)}`
 
-    const fileResponse = await fetch(getFileUrl, {
-      cache: "no-store",
-    })
+    const fileResponse = await fetch(getFileUrl, { cache: "no-store" })
 
     if (!fileResponse.ok) {
       return svgResponse(name)
@@ -197,28 +167,13 @@ export async function GET(request: NextRequest) {
     }
 
     const filePath = fileData.result.file_path
-    const contentType = getContentType(filePath)
+    const downloadUrl = `https://api.telegram.org/file/bot${token}/${filePath}`
 
-    const downloadUrl =
-      "https://api.telegram.org/file/bot" + token + "/" + filePath
-
-    const imageResponse = await fetch(downloadUrl, {
-      cache: "no-store",
-    })
-
-    if (!imageResponse.ok) {
-      return svgResponse(name)
-    }
-
-    const imageBuffer = await imageResponse.arrayBuffer()
-
-    return new NextResponse(imageBuffer, {
-      status: 200,
+    // Redireciona a requisição do navegador direto para a URL do arquivo gerado
+    return NextResponse.redirect(downloadUrl, {
+      status: 302,
       headers: {
-        "Content-Type": contentType,
-        "Content-Disposition": "inline; filename=avatar.jpg",
         "Cache-Control": "public, max-age=86400",
-        "X-Robots-Tag": "noindex, nofollow, noarchive",
       },
     })
   } catch {
