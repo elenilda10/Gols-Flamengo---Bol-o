@@ -151,9 +151,26 @@ export default function RankingClient() {
     loadRanking()
   }, [])
 
-  // Processa a busca e os filtros baseados no tipo selecionado
+  // 🏆 ORDENAÇÃO NUMÉRICA RIGOROSA (Pontos Decrescentes -> Desempate por Acertos)
+  const sortedRanking = useMemo(() => {
+    return [...ranking].sort((a, b) => {
+      const pontosA = Number(a.pontos) || 0
+      const pontosB = Number(b.pontos) || 0
+
+      if (pontosB !== pontosA) {
+        return pontosB - pontosA
+      }
+
+      const acertosA = Number(a.total) || (Array.isArray(a.acertos) ? a.acertos.length : 0)
+      const acertosB = Number(b.total) || (Array.isArray(b.acertos) ? b.acertos.length : 0)
+
+      return acertosB - acertosA
+    })
+  }, [ranking])
+
+  // Processa a busca e os filtros baseados na lista ordenada
   const filteredRanking = useMemo(() => {
-    let result = [...ranking]
+    let result = [...sortedRanking]
 
     if (filterType === "top10") {
       result = result.slice(0, 10)
@@ -165,13 +182,13 @@ export default function RankingClient() {
     return result.filter((player) => {
       return getName(player).toLowerCase().includes(term)
     })
-  }, [ranking, search, filterType])
+  }, [sortedRanking, search, filterType])
 
-  const topThree = ranking.slice(0, 3)
-  const totalJogadores = ranking.length
-  const pontosSomados = ranking.reduce((sum, item) => sum + Number(item.pontos || 0), 0)
-  const acertosRegistrados = ranking.reduce((sum, item) => sum + Number(item.total || 0), 0)
-  const lider = ranking[0] ? getName(ranking[0]) : "—"
+  const topThree = sortedRanking.slice(0, 3)
+  const totalJogadores = sortedRanking.length
+  const pontosSomados = sortedRanking.reduce((sum, item) => sum + Number(item.pontos || 0), 0)
+  const acertosRegistrados = sortedRanking.reduce((sum, item) => sum + Number(item.total || 0), 0)
+  const lider = sortedRanking[0] ? getName(sortedRanking[0]) : "—"
 
   return (
     <>
@@ -318,7 +335,7 @@ export default function RankingClient() {
           ) : (
             filteredRanking.map((player) => {
               const playerId = getPlayerId(player)
-              const realIndex = ranking.findIndex((item) => getPlayerId(item) === playerId)
+              const realIndex = sortedRanking.findIndex((item) => getPlayerId(item) === playerId)
               const name = getName(player)
 
               return (
