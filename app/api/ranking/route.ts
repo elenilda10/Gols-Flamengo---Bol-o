@@ -3,6 +3,18 @@ import { NextResponse } from "next/server"
 export const dynamic = "force-dynamic"
 export const revalidate = 0
 
+interface RankingItem {
+  id: string
+  uid: string
+  nome: string
+  pontos: number | string
+  total?: number | string
+  acertos?: any[]
+  photo_url?: string
+  posicao?: number
+  [key: string]: any
+}
+
 export async function GET() {
   const apiUrl = process.env.RANKING_API_URL
 
@@ -24,7 +36,7 @@ export async function GET() {
 
     const text = await response.text()
 
-    let data
+    let data: { ok?: boolean; ranking?: RankingItem[]; [key: string]: any }
 
     try {
       data = JSON.parse(text)
@@ -39,6 +51,31 @@ export async function GET() {
         },
         { status: 502 }
       )
+    }
+
+    // 🏆 CORREÇÃO DO DESBALANCEAMENTO: Ordenação Numérica Decrescente
+    if (data && Array.isArray(data.ranking)) {
+      data.ranking.sort((a, b) => {
+        const pontosA = Number(a.pontos) || 0
+        const pontosB = Number(b.pontos) || 0
+
+        // 1º Critério: Pontos (maior primeiro)
+        if (pontosB !== pontosA) {
+          return pontosB - pontosA
+        }
+
+        // 2º Critério: Total de Acertos (desempate)
+        const acertosA = Number(a.total) || (Array.isArray(a.acertos) ? a.acertos.length : 0)
+        const acertosB = Number(b.total) || (Array.isArray(b.acertos) ? b.acertos.length : 0)
+
+        return acertosB - acertosA
+      })
+
+      // Atribui a posição numérica perfeita (#1, #2, #3...)
+      data.ranking = data.ranking.map((item, index) => ({
+        ...item,
+        posicao: index + 1,
+      }))
     }
 
     return NextResponse.json(data, {
