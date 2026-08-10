@@ -129,28 +129,35 @@ export async function GET(request: NextRequest) {
     })
 
     if (player) {
-      fileId = player.photo_file_id || ""
+      fileId = player.photo_file_id || fileId
       photoUrl = player.photo_url || ""
       name = getUserName(player)
     }
   }
 
-  // 2. Se a URL salva no KV for pública e válida, redireciona diretamente (Instantâneo)
+  // 2. Se a URL do KV for válida e não expirada, faz o teste HEAD e redireciona
   if (photoUrl && photoUrl.startsWith("http") && !photoUrl.includes("dicebear")) {
-    return NextResponse.redirect(photoUrl, {
-      status: 302,
-      headers: {
-        "Cache-Control": "public, max-age=86400",
-      },
-    })
+    try {
+      const checkRes = await fetch(photoUrl, { method: "HEAD", cache: "no-store" })
+      if (checkRes.ok) {
+        return NextResponse.redirect(photoUrl, {
+          status: 302,
+          headers: {
+            "Cache-Control": "public, max-age=3600",
+          },
+        })
+      }
+    } catch {
+      // Se der erro ou link expirado, ignora e segue para renovar o file_id abaixo
+    }
   }
 
-  // 3. Se não houver FileId ou Token, devolve o SVG de iniciais
+  // 3. Se não houver FileId ou Token do Bot, devolve o SVG com as iniciais do torcedor
   if (!fileId || !token) {
     return svgResponse(name)
   }
 
-  // 4. Fluxo de renovação via Telegram Bot API
+  // 4. Fluxo de renovação usando o file_id via Telegram Bot API
   try {
     const getFileUrl = `https://api.telegram.org/bot${token}/getFile?file_id=${encodeURIComponent(fileId)}`
 
@@ -169,11 +176,11 @@ export async function GET(request: NextRequest) {
     const filePath = fileData.result.file_path
     const downloadUrl = `https://api.telegram.org/file/bot${token}/${filePath}`
 
-    // Redireciona a requisição do navegador direto para a URL do arquivo gerado
+    // Redireciona para a URL renovada e válida do arquivo no Telegram
     return NextResponse.redirect(downloadUrl, {
       status: 302,
       headers: {
-        "Cache-Control": "public, max-age=86400",
+        "Cache-Control": "public, max-age=3600",
       },
     })
   } catch {
