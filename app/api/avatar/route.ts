@@ -109,8 +109,32 @@ async function getRanking(): Promise<RankingItem[]> {
   }
 }
 
+// Auxiliar para baixar do Telegram forçando a exibição inline
+async function fetchTelegramImage(url: string) {
+  const res = await fetch(url, {
+    cache: "no-store",
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+  })
+
+  if (!res.ok) return null
+
+  const buffer = await res.arrayBuffer()
+  const contentType = res.headers.get("content-type") || "image/jpeg"
+
+  return new NextResponse(buffer, {
+    status: 200,
+    headers: {
+      "Content-Type": contentType,
+      "Content-Disposition": "inline; filename=avatar.jpg",
+      "Cache-Control": "public, max-age=86400, s-maxage=86400",
+      "X-Robots-Tag": "noindex, nofollow, noarchive",
+    },
+  })
+}
+
 export async function GET(request: NextRequest) {
-  // Suporta tanto TELEGRAM_TOKEN quanto TELEGRAM_BOT_TOKEN na Vercel
   const token = process.env.TELEGRAM_TOKEN || process.env.TELEGRAM_BOT_TOKEN
 
   const uid = request.nextUrl.searchParams.get("uid")
@@ -120,7 +144,7 @@ export async function GET(request: NextRequest) {
   let photoUrl = ""
   let name = "Torcedor"
 
-  // 1. Busca no ranking se tiver UID fornecido
+  // 1. Busca dados no ranking se tiver UID fornecido
   if (uid) {
     const ranking = await getRanking()
 
@@ -135,54 +159,34 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // 2. Se a URL do KV for válida e não expirada, faz o teste HEAD e redireciona
+  // 2. Se a URL salva no KV existir, tenta servir o buffer embutido (inline)
   if (photoUrl && photoUrl.startsWith("http") && !photoUrl.includes("dicebear")) {
-    try {
-      const checkRes = await fetch(photoUrl, { method: "HEAD", cache: "no-store" })
-      if (checkRes.ok) {
-        return NextResponse.redirect(photoUrl, {
-          status: 302,
-          headers: {
-            "Cache-Control": "public, max-age=3600",
-          },
-        })
-      }
-    } catch {
-      // Se der erro ou link expirado, ignora e segue para renovar o file_id abaixo
-    }
+    const responseImage = await fetchTelegramImage(photoUrl)
+    if (responseImage) return responseImage
   }
 
-  // 3. Se não houver FileId ou Token do Bot, devolve o SVG com as iniciais do torcedor
+  // 3. Se não houver FileId ou Token do Bot, devolve o SVG de iniciais
   if (!fileId || !token) {
     return svgResponse(name)
   }
 
-  // 4. Fluxo de renovação usando o file_id via Telegram Bot API
+  // 4. Fluxo via Telegram Bot API (Renovando file_id)
   try {
     const getFileUrl = `https://api.telegram.org/bot${token}/getFile?file_id=${encodeURIComponent(fileId)}`
-
     const fileResponse = await fetch(getFileUrl, { cache: "no-store" })
 
-    if (!fileResponse.ok) {
-      return svgResponse(name)
-    }
+    if (!fileResponse.ok) return svgResponse(name)
 
     const fileData = await fileResponse.json()
-
-    if (!fileData.ok || !fileData.result?.file_path) {
-      return svgResponse(name)
-    }
+    if (!fileData.ok || !fileData.result?.file_path) return svgResponse(name)
 
     const filePath = fileData.result.file_path
     const downloadUrl = `https://api.telegram.org/file/bot${token}/${filePath}`
 
-    // Redireciona para a URL renovada e válida do arquivo no Telegram
-    return NextResponse.redirect(downloadUrl, {
-      status: 302,
-      headers: {
-        "Cache-Control": "public, max-age=3600",
-      },
-    })
+    const responseImage = await fetchTelegramImage(downloadUrl)
+    if (responseImage) return responseImage
+
+    return svgResponse(name)
   } catch {
     return svgResponse(name)
   }
